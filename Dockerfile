@@ -38,4 +38,4 @@ RUN mkdir -p dist/generated/prisma/internal \
 
 EXPOSE 3000
 
-CMD npx prisma migrate deploy && node dist/src/main
+CMD npx prisma migrate deploy && npx tsx prisma/seed.ts && node dist/src/main
