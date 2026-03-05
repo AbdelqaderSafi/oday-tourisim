@@ -5,6 +5,9 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "seed": "tsx prisma/seed.ts",
     "build": "prisma generate && nest build && node -e \"const fs=require('fs');fs.mkdirSync('dist/generated/prisma',{recursive:true});fs.copyFileSync('generated/prisma/package.json','dist/generated/prisma/package.json');fs.mkdirSync('dist/generated/prisma/internal',{recursive:true});fs.copyFileSync('generated/prisma/internal/package.json','dist/generated/prisma/internal/package.json');\"",
