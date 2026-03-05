@@ -1,2 +1,4 @@
 [phases.setup]
-nixPkgs = ["nodejs_24"]
+nixPkgs = []
+aptPkgs = ["curl", "ca-certificates", "build-essential", "python3"]
+cmds = ["curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && apt-get install -y nodejs"]
