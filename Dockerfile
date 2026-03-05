@@ -10,13 +10,14 @@ RUN apt-get update && apt-get install -y \
     openssl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
+# Install ALL dependencies (including devDependencies needed for build)
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --include=dev
 
 # Copy source and build
 COPY . .
 RUN npm run build
+RUN ls /app/dist/main.js || (echo "ERROR: dist/main.js was not created by build!" && exit 1)
 
 EXPOSE 3000
 
