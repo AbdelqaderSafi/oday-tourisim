@@ -1,0 +1,169 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Admin {
+  id         String  @id @default(uuid()) @db.VarChar(36)
+  email      String  @unique @db.VarChar(255)
+  password   String  @db.Text
+  name       String  @db.VarChar(255)
+  is_deleted Boolean @default(false)
+
+  @@map("admins")
+}
+
+model Hotel {
+  id           String        @id @default(uuid()) @db.VarChar(36)
+  name         String        @db.VarChar(255)
+  description  String?       @db.Text
+  stars        StarsEnum
+  hotel_images String?       @db.Text
+  features     Json
+  is_deleted   Boolean       @default(false)
+  city         String        @db.VarChar(255)
+  duration     String        @db.VarChar(255)
+
+  checkouts    Checkout[]
+
+  @@map("Hotels")
+}
+
+model Offer {
+  id          String             @id @default(uuid()) @db.VarChar(36)
+  destination String             @db.Text
+  price       Decimal            @db.Decimal(10, 2)
+  currency    CurrencyEnum
+  duration    String             @db.VarChar(255)
+  offer_image String             @db.Text
+  services    Json
+  is_featured  Boolean           @default(false) 
+  is_deleted  Boolean            @default(false)
+
+  @@map("Offers")
+}
+
+model Trip {
+  id          String       @id @default(uuid()) @db.VarChar(36)
+  title       String       @db.VarChar(255)
+  description String?      @db.Text
+  duration    String       @db.VarChar(255)
+  price       Decimal      @db.Decimal(10, 2)
+  currency    CurrencyEnum
+  country     String       @db.VarChar(255)
+  trip_images String       @db.Text
+  notes       String?      @db.Text
+  is_deleted  Boolean      @default(false)
+
+  checkouts   Checkout[]
+
+  @@map("Trips")
+}
+
+model Service {
+  id          BigInt          @id @default(autoincrement())
+  title       String          @db.Text
+  type        ServiceTypeEnum
+  description String?         @db.Text
+  notes       String?         @db.Text
+
+  checkouts   Checkout[]
+
+  @@map("services")
+}
+
+model Checkout {
+  id                BigInt    @id @default(autoincrement())
+  hotel_id          String    @db.VarChar(36)
+  trip_id           String?   @db.VarChar(36)
+  service_id        BigInt?
+  start_date        DateTime
+  end_date          DateTime?
+  individual_number Int       @db.Int
+  total_price       Decimal   @db.Decimal(10, 2)
+
+  hotel      Hotel?   @relation(fields: [hotel_id], references: [id])
+  trip       Trip?    @relation(fields: [trip_id], references: [id])
+  service    Service? @relation(fields: [service_id], references: [id])
+
+  @@map("checkout")
+}
+
+model Comment {
+  id          BigInt    @id @default(autoincrement())
+  client_name String    @db.VarChar(255)
+  stars       StarsEnum
+  comment     String    @db.Text
+  trip_name   String?   @db.VarChar(255)
+  is_hidden   Boolean   @default(false)
+
+  @@map("Comments")
+}
+
+model Gallery {
+  id          BigInt          @id @default(autoincrement())
+  image       String          @db.Text
+  image_title String          @db.Text
+  description String?         @db.Text
+  type        GalleryTypeEnum
+  is_deleted  Boolean         @default(false)
+
+  @@map("Gallery")
+}
+
+model Setting {
+  id              BigInt  @id @default(autoincrement())
+  company_name_ar String? @db.Text 
+  company_name_en String? @db.Text
+  location        String? @db.Text
+  whatsapp_number String? @db.VarChar(50)
+  phone_number    String? @db.VarChar(50)
+  email           String? @db.VarChar(255)
+  new_column      BigInt?
+  facebook_link   String? @db.Text 
+  instagram_link  String? @db.Text 
+  tiktok_link     String? @db.Text 
+  hero_title      String? @db.Text 
+  hero_subtitle   String? @db.Text 
+  badge           String? @db.VarChar(255)
+
+  @@map("Settings")
+}
+
+
+enum StarsEnum {
+  ONE
+  TWO
+  THREE
+  FOUR
+  FIVE
+}
+
+enum CurrencyEnum {
+  USD
+  EUR
+  EGP
+  ILS
+}
+
+enum ServiceTypeEnum {
+FLYING
+TRANSPORTATION
+INSURANCE
+OTHER
+}
+
+enum GalleryTypeEnum {
+  COMPANY
+  CLIENT
+}
