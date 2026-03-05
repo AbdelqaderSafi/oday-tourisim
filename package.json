@@ -10,7 +10,7 @@
   },
   "scripts": {
     "seed": "tsx prisma/seed.ts",
-    "build": "prisma generate && nest build",
+    "build": "prisma generate && nest build && node -e \"const{cpSync,rmSync}=require('fs');rmSync('dist/generated',{recursive:true,force:true});cpSync('generated','dist/generated',{recursive:true});\"",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",

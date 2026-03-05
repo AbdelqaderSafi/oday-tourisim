@@ -17,9 +17,8 @@ RUN npm ci --include=dev
 # Copy source and build
 COPY . .
 RUN npx prisma generate && npx nest build \
-    && echo '{"type":"commonjs"}' > dist/generated/prisma/package.json \
-    && echo '{"type":"commonjs"}' > dist/generated/prisma/internal/package.json \
-    && cat dist/generated/prisma/package.json
+    && rm -rf dist/generated \
+    && cp -r generated dist/generated
 
 EXPOSE 3000
 
