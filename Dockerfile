@@ -16,7 +16,8 @@ RUN npm ci --include=dev
 
 # Copy source and build
 COPY . .
-RUN npx prisma generate && npx nest build
+RUN npx prisma generate && npx nest build \
+    && rm -f dist/generated/prisma/package.json dist/generated/prisma/internal/package.json
 
 EXPOSE 3000
 
