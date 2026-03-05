@@ -16,8 +16,23 @@ RUN npm ci --include=dev
 
 # Copy source and build
 COPY . .
-RUN npx prisma generate && npx nest build \
-    && mkdir -p dist/generated/prisma/internal \
+
+# 1. Generate Prisma client
+RUN npx prisma generate
+
+# 2. Ensure source package.json files exist for tsc ESM detection
+RUN echo '{"type":"module"}' > generated/prisma/package.json \
+    && echo '{"type":"module"}' > generated/prisma/internal/package.json \
+    && echo "=== SOURCE package.json ===" && cat generated/prisma/package.json
+
+# 3. Build NestJS (tsc will see type:module and output ESM for generated files)
+RUN npx nest build
+
+# 4. Debug: show what tsc produced
+RUN echo "=== DIST client.js first 5 lines ===" && head -5 dist/generated/prisma/client.js
+
+# 5. Ensure runtime package.json for Node ESM resolution
+RUN mkdir -p dist/generated/prisma/internal \
     && echo '{"type":"module"}' > dist/generated/prisma/package.json \
     && echo '{"type":"module"}' > dist/generated/prisma/internal/package.json
 
