@@ -18,9 +18,6 @@ RUN npm ci --include=dev
 COPY . .
 RUN npx prisma generate && npx nest build
 
-# Write package.json for ESM support in generated prisma
-RUN node -e "const fs=require('fs');fs.mkdirSync('dist/generated/prisma/internal',{recursive:true});fs.writeFileSync('dist/generated/prisma/package.json','{\"type\":\"module\"}');fs.writeFileSync('dist/generated/prisma/internal/package.json','{\"type\":\"module\"}');"
-
 EXPOSE 3000
 
 CMD npx prisma migrate deploy && node dist/src/main
