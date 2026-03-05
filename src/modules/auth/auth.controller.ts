@@ -1,21 +1,18 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import type { AdminResponseDTO, LoginDto } from './dto/auth.dto';
+import type { AdminResponseDTO } from './dto/auth.dto';
+import { LoginDto } from './dto/auth.dto';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  // @IsPublic(true)
+  @ApiOperation({ summary: 'Admin login' })
+  @ApiResponse({ status: 201, description: 'Returns JWT token and admin data' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
   login(@Body() loginDTO: LoginDto): Promise<AdminResponseDTO> {
     return this.authService.login(loginDTO);
   }

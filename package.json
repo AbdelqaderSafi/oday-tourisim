@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "seed": "tsx prisma/seed.ts",
-    "build": "nest build && node -e \"const fs=require('fs');fs.mkdirSync('dist/generated/prisma',{recursive:true});fs.copyFileSync('generated/prisma/package.json','dist/generated/prisma/package.json');fs.mkdirSync('dist/generated/prisma/internal',{recursive:true});fs.copyFileSync('generated/prisma/internal/package.json','dist/generated/prisma/internal/package.json');\"",
+    "build": "prisma generate && nest build && node -e \"const fs=require('fs');fs.mkdirSync('dist/generated/prisma',{recursive:true});fs.copyFileSync('generated/prisma/package.json','dist/generated/prisma/package.json');fs.mkdirSync('dist/generated/prisma/internal',{recursive:true});fs.copyFileSync('generated/prisma/internal/package.json','dist/generated/prisma/internal/package.json');\"",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -27,6 +27,7 @@
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/swagger": "^11.2.6",
     "@prisma/adapter-mariadb": "^7.4.2",
     "@prisma/client": "^7.4.2",
     "argon2": "^0.44.0",
