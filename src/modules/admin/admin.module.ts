@@ -5,7 +5,6 @@ import { DatabaseModule } from '../database/database.module';
 
 @Module({
   imports: [DatabaseModule],
-  // controllers: [AdminController],
   providers: [AdminService],
   exports: [AdminService],
 })

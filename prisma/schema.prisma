@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -23,61 +17,16 @@ model Admin {
   @@map("admins")
 }
 
-model Hotel {
-  id           String        @id @default(uuid()) @db.VarChar(36)
-  name         String        @db.VarChar(255)
-  description  String?       @db.Text
-  stars        StarsEnum
-  hotel_images String?       @db.Text
-  features     Json
-  is_deleted   Boolean       @default(false)
-  city         String        @db.VarChar(255)
-  duration     String        @db.VarChar(255)
-
-  checkouts    Checkout[]
-
-  @@map("Hotels")
-}
-
-model Offer {
-  id          String             @id @default(uuid()) @db.VarChar(36)
-  destination String             @db.Text
-  price       Decimal            @db.Decimal(10, 2)
-  currency    CurrencyEnum
-  duration    String             @db.VarChar(255)
-  offer_image String             @db.Text
-  services    Json
-  is_featured  Boolean           @default(false) 
-  is_deleted  Boolean            @default(false)
-
-  @@map("Offers")
-}
-
-model Trip {
-  id          String       @id @default(uuid()) @db.VarChar(36)
-  title       String       @db.VarChar(255)
-  description String?      @db.Text
-  duration    String       @db.VarChar(255)
-  price       Decimal      @db.Decimal(10, 2)
-  currency    CurrencyEnum
-  country     String       @db.VarChar(255)
-  trip_images String       @db.Text
-  notes       String?      @db.Text
-  is_deleted  Boolean      @default(false)
-
-  checkouts   Checkout[]
-
-  @@map("Trips")
-}
-
 model Service {
   id          BigInt          @id @default(autoincrement())
   title       String          @db.Text
   type        ServiceTypeEnum
   description String?         @db.Text
   notes       String?         @db.Text
+  created_at  DateTime        @default(now())
+  updated_at  DateTime        @updatedAt
 
-  checkouts   Checkout[]
+  checkouts Checkout[]
 
   @@map("services")
 }
@@ -89,59 +38,116 @@ model Checkout {
   service_id        BigInt?
   start_date        DateTime
   end_date          DateTime?
-  individual_number Int       @db.Int
+  individual_number Int
   total_price       Decimal   @db.Decimal(10, 2)
 
-  hotel      Hotel?   @relation(fields: [hotel_id], references: [id])
-  trip       Trip?    @relation(fields: [trip_id], references: [id])
-  service    Service? @relation(fields: [service_id], references: [id])
+  hotel             hotels    @relation(fields: [hotel_id], references: [id])
+  trip              trips?    @relation(fields: [trip_id], references: [id])
+  service           Service?  @relation(fields: [service_id], references: [id])
 
+  @@index([hotel_id], map: "checkout_hotel_id_fkey")
+  @@index([service_id], map: "checkout_service_id_fkey")
+  @@index([trip_id], map: "checkout_trip_id_fkey")
   @@map("checkout")
 }
 
-model Comment {
-  id          BigInt    @id @default(autoincrement())
-  client_name String    @db.VarChar(255)
-  stars       StarsEnum
-  comment     String    @db.Text
-  trip_name   String?   @db.VarChar(255)
-  is_hidden   Boolean   @default(false)
-
-  @@map("Comments")
+model comments {
+  id          BigInt         @id @default(autoincrement())
+  client_name String         @db.VarChar(255)
+  stars       comments_stars
+  comment     String         @db.Text
+  trip_name   String?        @db.VarChar(255)
+  is_hidden   Boolean        @default(false)
+  created_at  DateTime       @default(now())
+  updated_at  DateTime       @updatedAt
+  is_deleted  Boolean        @default(false)
 }
 
-model Gallery {
-  id          BigInt          @id @default(autoincrement())
-  image       String          @db.Text
-  image_title String          @db.Text
-  description String?         @db.Text
-  type        GalleryTypeEnum
+model gallery {
+  id          BigInt       @id @default(autoincrement())
+  image       String       @db.Text
+  image_title String       @db.Text
+  description String?      @db.Text
+  type        gallery_type
+  created_at  DateTime       @default(now())
+  updated_at  DateTime       @updatedAt
+  is_deleted  Boolean        @default(false)
+}
+
+model hotels {
+  id           String       @id @db.VarChar(36)
+  name         String       @db.VarChar(255)
+  description  String?      @db.Text
+  stars        hotels_stars
+  hotel_images String?      @db.Text
+  features     Json
+  is_deleted   Boolean      @default(false)
+  city         String       @db.VarChar(255)
+  price_per_night Decimal      @db.Decimal(10, 2)
+  duration     String       @db.VarChar(255)
+  created_at  DateTime       @default(now())
+  updated_at  DateTime       @updatedAt
+
+  checkouts Checkout[]
+}
+
+model offers {
+  id          String          @id @db.VarChar(36)
+  destination String          @db.Text
+  price       Decimal         @db.Decimal(10, 2)
+  currency    offers_currency
+  duration    String          @db.VarChar(255)
+  offer_image String          @db.Text
+  services    Json
+  is_featured Boolean         @default(false)
   is_deleted  Boolean         @default(false)
-
-  @@map("Gallery")
+  created_at  DateTime       @default(now())
+  updated_at  DateTime       @updatedAt
+  
 }
 
-model Setting {
+model settings {
   id              BigInt  @id @default(autoincrement())
-  company_name_ar String? @db.Text 
+  company_name_ar String? @db.Text
   company_name_en String? @db.Text
   location        String? @db.Text
   whatsapp_number String? @db.VarChar(50)
   phone_number    String? @db.VarChar(50)
   email           String? @db.VarChar(255)
   new_column      BigInt?
-  facebook_link   String? @db.Text 
-  instagram_link  String? @db.Text 
-  tiktok_link     String? @db.Text 
-  hero_title      String? @db.Text 
-  hero_subtitle   String? @db.Text 
+  facebook_link   String? @db.Text
+  instagram_link  String? @db.Text
+  tiktok_link     String? @db.Text
+  hero_title      String? @db.Text
+  hero_subtitle   String? @db.Text
   badge           String? @db.VarChar(255)
-
-  @@map("Settings")
 }
 
+model trips {
+  id          String         @id @db.VarChar(36)
+  title       String         @db.VarChar(255)
+  description String?        @db.Text
+  duration    String         @db.VarChar(255)
+  price       Decimal        @db.Decimal(10, 2)
+  currency    trips_currency
+  country     String         @db.VarChar(255)
+  trip_images String         @db.Text
+  notes       String?        @db.Text
+  is_deleted  Boolean        @default(false)
+  created_at  DateTime       @default(now())
+  updated_at  DateTime       @updatedAt
 
-enum StarsEnum {
+  checkouts Checkout[]
+}
+
+enum ServiceTypeEnum {
+  FLYING
+  TRANSPORTATION
+  INSURANCE
+  OTHER
+}
+
+enum comments_stars {
   ONE
   TWO
   THREE
@@ -149,21 +155,29 @@ enum StarsEnum {
   FIVE
 }
 
-enum CurrencyEnum {
+enum hotels_stars {
+  ONE
+  TWO
+  THREE
+  FOUR
+  FIVE
+}
+
+enum offers_currency {
   USD
   EUR
   EGP
   ILS
 }
 
-enum ServiceTypeEnum {
-FLYING
-TRANSPORTATION
-INSURANCE
-OTHER
-}
-
-enum GalleryTypeEnum {
+enum gallery_type {
   COMPANY
   CLIENT
+}
+
+enum trips_currency {
+  USD
+  EUR
+  EGP
+  ILS
 }
