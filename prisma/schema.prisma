@@ -18,7 +18,7 @@ model Admin {
 }
 
 model Service {
-  id          BigInt          @id @default(autoincrement())
+  id          String         @id @default(uuid()) @db.VarChar(36)
   title       String          @db.Text
   type        ServiceTypeEnum
   description String?         @db.Text
@@ -32,10 +32,10 @@ model Service {
 }
 
 model Checkout {
-  id                BigInt    @id @default(autoincrement())
+  id                String    @id @default(uuid()) @db.VarChar(36)
   hotel_id          String    @db.VarChar(36)
   trip_id           String?   @db.VarChar(36)
-  service_id        BigInt?
+  service_id        String?   @db.VarChar(36)
   start_date        DateTime
   end_date          DateTime?
   individual_number Int
@@ -52,7 +52,7 @@ model Checkout {
 }
 
 model comments {
-  id          BigInt         @id @default(autoincrement())
+  id          String         @id @default(uuid())
   client_name String         @db.VarChar(255)
   stars       comments_stars
   comment     String         @db.Text
@@ -64,7 +64,7 @@ model comments {
 }
 
 model gallery {
-  id          BigInt       @id @default(autoincrement())
+  id          String       @id @default(uuid()) @db.VarChar(36)
   image       String       @db.Text
   image_title String       @db.Text
   description String?      @db.Text
@@ -72,10 +72,12 @@ model gallery {
   created_at  DateTime       @default(now())
   updated_at  DateTime       @updatedAt
   is_deleted  Boolean        @default(false)
+
+  assets   Asset[]    @relation("GalleryAssets")
 }
 
 model hotels {
-  id           String       @id @db.VarChar(36)
+  id            String      @id @default(uuid()) @db.VarChar(36)
   name         String       @db.VarChar(255)
   description  String?      @db.Text
   stars        hotels_stars
@@ -89,10 +91,11 @@ model hotels {
   updated_at  DateTime       @updatedAt
 
   checkouts Checkout[]
+  assets   Asset[]    @relation("HotelAssets")
 }
 
 model offers {
-  id          String          @id @db.VarChar(36)
+  id          String          @id @default(uuid()) @db.VarChar(36)
   destination String          @db.Text
   price       Decimal         @db.Decimal(10, 2)
   currency    offers_currency
@@ -103,18 +106,19 @@ model offers {
   is_deleted  Boolean         @default(false)
   created_at  DateTime       @default(now())
   updated_at  DateTime       @updatedAt
+
+  assets   Asset[]    @relation("OfferAssets")
   
 }
 
 model settings {
-  id              BigInt  @id @default(autoincrement())
+  id              String  @id @default(uuid())
   company_name_ar String? @db.Text
   company_name_en String? @db.Text
   location        String? @db.Text
   whatsapp_number String? @db.VarChar(50)
   phone_number    String? @db.VarChar(50)
   email           String? @db.VarChar(255)
-  new_column      BigInt?
   facebook_link   String? @db.Text
   instagram_link  String? @db.Text
   tiktok_link     String? @db.Text
@@ -124,7 +128,7 @@ model settings {
 }
 
 model trips {
-  id          String         @id @db.VarChar(36)
+  id          String         @id @default(uuid()) @db.VarChar(36)
   title       String         @db.VarChar(255)
   description String?        @db.Text
   duration    String         @db.VarChar(255)
@@ -138,7 +142,73 @@ model trips {
   updated_at  DateTime       @updatedAt
 
   checkouts Checkout[]
+  assets   Asset[]    @relation("TripAssets")
 }
+
+model Asset {
+  id                  String              @id @default(uuid()) @db.VarChar(36)
+  storageProviderName StorageProviderName @default(IMAGE_KIT) @map("storage_provider_name")
+  fileId              String              @unique @map("file_id")
+  url                 String              @db.Text
+  fileType            String              @map("file_type") @db.Text
+  fileSizeInKB        Int                 @map("file_size_in_kb") @db.UnsignedInt
+  kind                AssetKind
+
+  hotelId             String?             @map("hotel_id") @db.VarChar(36)
+  hotel               hotels?             @relation("HotelAssets", fields: [hotelId], references: [id])
+
+  tripId              String?             @map("trip_id") @db.VarChar(36)
+  trip                trips?              @relation("TripAssets", fields: [tripId], references: [id])
+
+  offerId             String?             @map("offer_id") @db.VarChar(36)
+  offer               offers?             @relation("OfferAssets", fields: [offerId], references: [id])
+
+  galleryId           String?             @map("gallery_id") @db.VarChar(36)
+  gallery             gallery?            @relation("GalleryAssets", fields: [galleryId], references: [id])
+
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+  
+  @@index([tripId])
+  @@index([hotelId])
+  @@index([galleryId])
+  @@index([offerId])
+
+  @@map("assets")
+}
+
+// model Asset {
+//   id                  String              @id @default(uuid()) @db.Char(36)
+//   storageProviderName StorageProviderName @default(IMAGE_KIT) @map("storage_provider_name")
+//   fileId              String              @unique @map("file_id")
+//   url                 String              @db.Text
+//   fileType            String              @map("file_type") @db.Text
+//   fileSizeInKB        Int                 @map("file_size_in_kb") @db.UnsignedInt
+//   kind                AssetKind
+//   hotelId             String              @map("hotel_id") @db.Char(36)
+//   hotel               hotels                @relation("HotelAssets", fields: [hotelId], references: [id])
+
+//   tripId              String             @map("trip_id") @db.Char(36)
+//   trip                trips               @relation("TripAssets", fields: [tripId], references: [id])
+
+//   offerId          String             @map("offer_id") @db.Char(36)
+//   offer            offers             @relation("OfferAssets", fields: [offerId], references: [id])
+
+//   galleryId    String                @map("gallery_id") @db.Char(36)
+//   gallery      gallery                @relation("GalleryAssets", fields: [galleryId], references: [id])
+
+
+//   createdAt     DateTime     @default(now()) @map("created_at")
+//   updatedAt     DateTime     @updatedAt @map("updated_at")
+  
+//   @@index([tripId])
+//   @@index([hotelId])
+//   @@index([galleryId])
+//   @@index([offerId])
+
+
+//   @@map("assets")
+// }
 
 enum ServiceTypeEnum {
   FLYING
@@ -180,4 +250,14 @@ enum trips_currency {
   EUR
   EGP
   ILS
+}
+enum StorageProviderName {
+  IMAGE_KIT
+}
+enum AssetKind {
+  HOTEL_IMAGE
+  TRIP_IMAGE
+  OFFER_IMAGE
+  GALLERY_IMAGE
+
 }

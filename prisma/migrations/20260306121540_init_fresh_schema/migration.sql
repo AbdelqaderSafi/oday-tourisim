@@ -12,7 +12,7 @@ CREATE TABLE `admins` (
 
 -- CreateTable
 CREATE TABLE `services` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `id` VARCHAR(36) NOT NULL,
     `title` TEXT NOT NULL,
     `type` ENUM('FLYING', 'TRANSPORTATION', 'INSURANCE', 'OTHER') NOT NULL,
     `description` TEXT NULL,
@@ -25,10 +25,10 @@ CREATE TABLE `services` (
 
 -- CreateTable
 CREATE TABLE `checkout` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `id` VARCHAR(36) NOT NULL,
     `hotel_id` VARCHAR(36) NOT NULL,
     `trip_id` VARCHAR(36) NULL,
-    `service_id` BIGINT NULL,
+    `service_id` VARCHAR(36) NULL,
     `start_date` DATETIME(3) NOT NULL,
     `end_date` DATETIME(3) NULL,
     `individual_number` INTEGER NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE `checkout` (
 
 -- CreateTable
 CREATE TABLE `comments` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `id` VARCHAR(191) NOT NULL,
     `client_name` VARCHAR(255) NOT NULL,
     `stars` ENUM('ONE', 'TWO', 'THREE', 'FOUR', 'FIVE') NOT NULL,
     `comment` TEXT NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE `comments` (
 
 -- CreateTable
 CREATE TABLE `gallery` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `id` VARCHAR(36) NOT NULL,
     `image` TEXT NOT NULL,
     `image_title` TEXT NOT NULL,
     `description` TEXT NULL,
@@ -106,14 +106,13 @@ CREATE TABLE `offers` (
 
 -- CreateTable
 CREATE TABLE `settings` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `id` VARCHAR(191) NOT NULL,
     `company_name_ar` TEXT NULL,
     `company_name_en` TEXT NULL,
     `location` TEXT NULL,
     `whatsapp_number` VARCHAR(50) NULL,
     `phone_number` VARCHAR(50) NULL,
     `email` VARCHAR(255) NULL,
-    `new_column` BIGINT NULL,
     `facebook_link` TEXT NULL,
     `instagram_link` TEXT NULL,
     `tiktok_link` TEXT NULL,
@@ -142,6 +141,30 @@ CREATE TABLE `trips` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- CreateTable
+CREATE TABLE `assets` (
+    `id` VARCHAR(36) NOT NULL,
+    `storage_provider_name` ENUM('IMAGE_KIT') NOT NULL DEFAULT 'IMAGE_KIT',
+    `file_id` VARCHAR(191) NOT NULL,
+    `url` TEXT NOT NULL,
+    `file_type` TEXT NOT NULL,
+    `file_size_in_kb` INTEGER UNSIGNED NOT NULL,
+    `kind` ENUM('HOTEL_IMAGE', 'TRIP_IMAGE', 'OFFER_IMAGE', 'GALLERY_IMAGE') NOT NULL,
+    `hotel_id` VARCHAR(36) NULL,
+    `trip_id` VARCHAR(36) NULL,
+    `offer_id` VARCHAR(36) NULL,
+    `gallery_id` VARCHAR(36) NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `assets_file_id_key`(`file_id`),
+    INDEX `assets_trip_id_idx`(`trip_id`),
+    INDEX `assets_hotel_id_idx`(`hotel_id`),
+    INDEX `assets_gallery_id_idx`(`gallery_id`),
+    INDEX `assets_offer_id_idx`(`offer_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- AddForeignKey
 ALTER TABLE `checkout` ADD CONSTRAINT `checkout_hotel_id_fkey` FOREIGN KEY (`hotel_id`) REFERENCES `hotels`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -150,3 +173,15 @@ ALTER TABLE `checkout` ADD CONSTRAINT `checkout_trip_id_fkey` FOREIGN KEY (`trip
 
 -- AddForeignKey
 ALTER TABLE `checkout` ADD CONSTRAINT `checkout_service_id_fkey` FOREIGN KEY (`service_id`) REFERENCES `services`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `assets` ADD CONSTRAINT `assets_hotel_id_fkey` FOREIGN KEY (`hotel_id`) REFERENCES `hotels`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `assets` ADD CONSTRAINT `assets_trip_id_fkey` FOREIGN KEY (`trip_id`) REFERENCES `trips`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `assets` ADD CONSTRAINT `assets_offer_id_fkey` FOREIGN KEY (`offer_id`) REFERENCES `offers`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `assets` ADD CONSTRAINT `assets_gallery_id_fkey` FOREIGN KEY (`gallery_id`) REFERENCES `gallery`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
