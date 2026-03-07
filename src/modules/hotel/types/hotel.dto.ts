@@ -1,6 +1,6 @@
 import { hotels, Prisma } from 'generated/prisma/client';
 
-export type createHotelDto = Pick<
+export type CreateHotelDto = Pick<
   hotels,
   | 'name'
   | 'description'
@@ -11,8 +11,8 @@ export type createHotelDto = Pick<
   | 'features'
 >;
 
-export type UpdateHotelDto = Partial<createHotelDto>;
+export type UpdateHotelDto = Partial<CreateHotelDto>;
 
-export type ProductResponseDTO = Prisma.hotelsGetPayload<{
+export type HotelResponseDTO = Prisma.hotelsGetPayload<{
   include: { assets: true };
 }>;

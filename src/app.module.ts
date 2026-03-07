@@ -4,6 +4,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { ConfigModule } from '@nestjs/config';
 import { HotelModule } from './modules/hotel/hotel.module';
+import { file } from 'zod';
+import { FileModule } from './modules/file/file.module';
 
 @Module({
   imports: [
@@ -14,6 +16,7 @@ import { HotelModule } from './modules/hotel/hotel.module';
       isGlobal: true,
     }),
     HotelModule,
+    FileModule,
   ],
   controllers: [],
   providers: [],
