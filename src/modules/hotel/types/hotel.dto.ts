@@ -13,6 +13,10 @@ export type CreateHotelDto = Pick<
 
 export type UpdateHotelDto = Partial<CreateHotelDto>;
 
+export type UpdateHotelRequest = UpdateHotelDto & {
+  deleteAssetIds?: string[];
+};
+
 export type HotelResponseDTO = Prisma.hotelsGetPayload<{
   include: { assets: true };
 }>;

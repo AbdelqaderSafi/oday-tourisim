@@ -7,20 +7,32 @@ import {
   Delete,
   UseInterceptors,
   UploadedFiles,
+  Query,
+  Patch,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { HotelService } from './hotel.service';
-import type { CreateHotelDto, HotelResponseDTO } from './types/hotel.dto';
+import type {
+  CreateHotelDto,
+  HotelResponseDTO,
+  UpdateHotelRequest,
+} from './types/hotel.dto';
 import { FileCleanupInterceptor } from '../file/cleanup-file.interceptor';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ZodValidationPipe } from 'src/pipes/zod.validation.pipe';
-import { hotelValidationSchema } from './util/hotel.validation';
+import {
+  hotelPaginationSchema,
+  hotelValidationSchema,
+  updateHotelValidationSchema,
+} from './util/hotel.validation';
 import {
   CreateHotelSwagger,
   FindAllHotelsSwagger,
   FindOneHotelSwagger,
+  UpdateHotelSwagger,
   DeleteHotelSwagger,
 } from './swagger/hotel.swagger';
+import type { HotelQuery } from './types/hotel.types';
 
 @ApiTags('Hotels')
 @ApiBearerAuth()
@@ -42,19 +54,34 @@ export class HotelController {
 
   @Get()
   @FindAllHotelsSwagger()
-  findAll() {
-    return this.hotelService.findAll();
+  findAll(
+    @Query(new ZodValidationPipe(hotelPaginationSchema)) query: HotelQuery,
+  ) {
+    return this.hotelService.findAll(query);
   }
 
   @Get(':id')
   @FindOneHotelSwagger()
   findOne(@Param('id') id: string) {
-    return this.hotelService.findOne(+id);
+    return this.hotelService.findOne(id);
+  }
+
+  @Patch(':id')
+  @UseInterceptors(FilesInterceptor('file'), FileCleanupInterceptor)
+  @UpdateHotelSwagger()
+  update(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(updateHotelValidationSchema))
+    updatePayload: UpdateHotelRequest,
+    @UploadedFiles()
+    files?: Array<Express.Multer.File>,
+  ): Promise<HotelResponseDTO> {
+    return this.hotelService.update(id, updatePayload, files);
   }
 
   @Delete(':id')
   @DeleteHotelSwagger()
   remove(@Param('id') id: string) {
-    return this.hotelService.remove(+id);
+    return this.hotelService.remove(id);
   }
 }
