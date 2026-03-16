@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { HotelModule } from './modules/hotel/hotel.module';
 import { file } from 'zod';
 import { FileModule } from './modules/file/file.module';
+import { OfferModule } from './modules/offer/offer.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { FileModule } from './modules/file/file.module';
     }),
     HotelModule,
     FileModule,
+    OfferModule,
   ],
   controllers: [],
   providers: [],

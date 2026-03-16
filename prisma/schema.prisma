@@ -79,19 +79,73 @@ model gallery {
 model hotels {
   id            String      @id @default(uuid()) @db.VarChar(36)
   name         String       @db.VarChar(255)
-  description  String?      @db.Text
+  destination  DestinatiosnEnum       
+  slug         String       @db.VarChar(255) @unique
+  initial_price Decimal      @db.Decimal(10, 2)
+  description  String      @db.Text
   stars        hotels_stars
-  hotel_images String?      @db.Text
-  features     Json
+  rating       HotelFilterRating
+  is_discounted Boolean      @default(false)
+  discount_percentage Decimal?     @db.Decimal(5, 2)
+  original_price Decimal?     @db.Decimal(10, 2)
+  youtube_video_url String?      @db.Text
+  Facilities     Json
+
   is_deleted   Boolean      @default(false)
-  city         String       @db.VarChar(255)
-  price_per_night Decimal      @db.Decimal(10, 2)
-  duration     String       @db.VarChar(255)
   created_at  DateTime       @default(now())
   updated_at  DateTime       @updatedAt
 
+  rooms     Room[]
+  addons    Addon[]
+
+  translations  HotelTranslation[]
+
   checkouts Checkout[]
-  assets   Asset[]    @relation("HotelAssets")
+  assets    Asset[]    @relation("HotelAssets")
+}
+model HotelTranslation {
+  id          String @id @default(uuid()) @db.VarChar(36)
+  hotel_id    String @db.VarChar(36)
+  language    String @db.VarChar(2) // القيم ستكون 'ar' أو 'en'
+  
+  // الحقول المترجمة
+  name        String @db.VarChar(255)
+  slug        String @db.VarChar(255) @unique // يفضل أن يكون الـ slug مترجماً ومميزاً ليفيد في الـ SEO
+  description String @db.Text
+
+  // الربط مع الفندق الأساسي
+  hotel       hotels @relation(fields: [hotel_id], references: [id], onDelete: Cascade)
+
+  // قيد لمنع تكرار نفس اللغة لنفس الفندق
+  @@unique([hotel_id, language])
+}
+
+model Addon {
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  name        String   @db.VarChar(255)       
+  description String  @db.Text             
+  price       Decimal  @db.Decimal(10, 2)   
+  
+  hotel_id    String   @db.VarChar(36)
+  hotel       hotels   @relation(fields: [hotel_id], references: [id], onDelete: Cascade)
+
+  is_deleted  Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}
+
+model Room {
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  name       String   @db.VarChar(255)      
+  capacity   String   @db.VarChar(50)       
+  price      Decimal  @db.Decimal(10, 2)     
+  
+  hotel_id   String   @db.VarChar(36)
+  hotel      hotels   @relation(fields: [hotel_id], references: [id], onDelete: Cascade)
+
+  is_deleted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model offers {
@@ -100,7 +154,6 @@ model offers {
   price       Decimal         @db.Decimal(10, 2)
   currency    offers_currency
   duration    String          @db.VarChar(255)
-  offer_image String          @db.Text
   services    Json
   is_featured Boolean         @default(false)
   is_deleted  Boolean         @default(false)
@@ -108,7 +161,6 @@ model offers {
   updated_at  DateTime       @updatedAt
 
   assets   Asset[]    @relation("OfferAssets")
-  
 }
 
 model settings {
@@ -135,7 +187,6 @@ model trips {
   price       Decimal        @db.Decimal(10, 2)
   currency    trips_currency
   country     String         @db.VarChar(255)
-  trip_images String         @db.Text
   notes       String?        @db.Text
   is_deleted  Boolean        @default(false)
   created_at  DateTime       @default(now())
@@ -176,40 +227,18 @@ model Asset {
 
   @@map("assets")
 }
-
-// model Asset {
-//   id                  String              @id @default(uuid()) @db.Char(36)
-//   storageProviderName StorageProviderName @default(IMAGE_KIT) @map("storage_provider_name")
-//   fileId              String              @unique @map("file_id")
-//   url                 String              @db.Text
-//   fileType            String              @map("file_type") @db.Text
-//   fileSizeInKB        Int                 @map("file_size_in_kb") @db.UnsignedInt
-//   kind                AssetKind
-//   hotelId             String              @map("hotel_id") @db.Char(36)
-//   hotel               hotels                @relation("HotelAssets", fields: [hotelId], references: [id])
-
-//   tripId              String             @map("trip_id") @db.Char(36)
-//   trip                trips               @relation("TripAssets", fields: [tripId], references: [id])
-
-//   offerId          String             @map("offer_id") @db.Char(36)
-//   offer            offers             @relation("OfferAssets", fields: [offerId], references: [id])
-
-//   galleryId    String                @map("gallery_id") @db.Char(36)
-//   gallery      gallery                @relation("GalleryAssets", fields: [galleryId], references: [id])
-
-
-//   createdAt     DateTime     @default(now()) @map("created_at")
-//   updatedAt     DateTime     @updatedAt @map("updated_at")
-  
-//   @@index([tripId])
-//   @@index([hotelId])
-//   @@index([galleryId])
-//   @@index([offerId])
-
-
-//   @@map("assets")
-// }
-
+enum HotelFilterRating {
+  UNRATED 
+  MOST_BOOKED
+  TOP_RATED 
+  LOWEST_PRICE 
+}
+enum DestinatiosnEnum {
+  SHARM_EL_SHEIKH
+  EL_GHARDQA
+  EL_AIN_SOKHNA
+  DAHAB
+}
 enum ServiceTypeEnum {
   FLYING
   TRANSPORTATION
@@ -255,7 +284,8 @@ enum StorageProviderName {
   IMAGE_KIT
 }
 enum AssetKind {
-  HOTEL_IMAGE
+  HOTEL_MAIN_IMAGE
+  HOTEL_GALLERY_IMAGE
   TRIP_IMAGE
   OFFER_IMAGE
   GALLERY_IMAGE
