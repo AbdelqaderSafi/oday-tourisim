@@ -1,21 +1,101 @@
-import { z, ZodType } from 'zod';
-import { CreateHotelDto, UpdateHotelRequest } from '../types/hotel.dto';
+import { z } from 'zod';
 import { paginationSchema } from 'src/modules/utils/api.util';
 import { HotelQuery } from '../types/hotel.types';
 import { Prisma } from 'generated/prisma/client';
 
-export const hotelValidationSchema = z.object({
-  name: z.string().min(2).max(100),
-  description: z.string().min(2).max(1000),
-  city: z.string().min(2).max(100),
-  duration: z.string().min(1).max(50),
-  stars: z.enum(['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE']),
-  price_per_night: z.coerce
+const translationSchema = z.object({
+  language: z.enum(['ar', 'en']),
+  name: z.string().min(2).max(255),
+  slug: z.string().min(2).max(255),
+  description: z.string().min(2),
+  Facilities: z.array(z.string().min(1).max(255)),
+});
+
+// In multipart/form-data, translations arrive as a JSON string
+const translationsField = z
+  .string()
+  .transform((val) => JSON.parse(val) as unknown)
+  .pipe(z.array(translationSchema).min(1).max(2));
+
+const roomInputSchema = z.object({
+  price: z.coerce
     .number()
     .min(0)
     .transform((val) => new Prisma.Decimal(val)),
-  features: z.array(z.string().min(1).max(255)).default([]),
-}) satisfies ZodType<CreateHotelDto>;
+  capacity: z.string().min(1).max(50),
+  translations: z
+    .array(
+      z.object({
+        language: z.enum(['ar', 'en']),
+        name: z.string().min(2).max(255),
+      }),
+    )
+    .min(1)
+    .max(2),
+});
+
+const addonInputSchema = z.object({
+  price: z.coerce
+    .number()
+    .min(0)
+    .transform((val) => new Prisma.Decimal(val)),
+  translations: z
+    .array(
+      z.object({
+        language: z.enum(['ar', 'en']),
+        name: z.string().min(2).max(255),
+        description: z.string().min(2),
+      }),
+    )
+    .min(1)
+    .max(2),
+});
+
+// rooms and addons also arrive as JSON strings in multipart/form-data
+const roomsField = z
+  .string()
+  .transform((val) => JSON.parse(val) as unknown)
+  .pipe(z.array(roomInputSchema))
+  .optional();
+
+const addonsField = z
+  .string()
+  .transform((val) => JSON.parse(val) as unknown)
+  .pipe(z.array(addonInputSchema))
+  .optional();
+
+export const hotelValidationSchema = z.object({
+  destination: z.enum([
+    'SHARM_EL_SHEIKH',
+    'EL_GHARDQA',
+    'EL_AIN_SOKHNA',
+    'DAHAB',
+  ]),
+  initial_price: z.coerce
+    .number()
+    .min(0)
+    .transform((val) => new Prisma.Decimal(val)),
+  stars: z.enum(['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE']),
+  rating: z.enum(['UNRATED', 'MOST_BOOKED', 'TOP_RATED', 'LOWEST_PRICE']),
+  is_discounted: z
+    .union([z.boolean(), z.string().transform((val) => val === 'true')])
+    .default(false),
+  discount_percentage: z.coerce
+    .number()
+    .min(0)
+    .max(100)
+    .transform((val) => new Prisma.Decimal(val))
+    .optional(),
+  original_price: z.coerce
+    .number()
+    .min(0)
+    .transform((val) => new Prisma.Decimal(val))
+    .optional(),
+  youtube_video_url: z.string().url().optional(),
+  translations: translationsField,
+  rooms: roomsField,
+  addons: addonsField,
+});
 
 // Zod v4 uuid() is overly strict with version/variant bits.
 // Also trim whitespace/newlines that multipart/form-data can append to field values.
@@ -28,27 +108,46 @@ const uuidLike = z
   );
 
 export const updateHotelValidationSchema = z.object({
-  name: z.string().trim().min(2).max(100).optional(),
-  description: z.string().trim().min(2).max(1000).optional(),
-  city: z.string().trim().min(2).max(100).optional(),
-  duration: z.string().trim().min(1).max(50).optional(),
-  stars: z.enum(['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE']).optional(),
-  price_per_night: z.coerce
+  destination: z
+    .enum(['SHARM_EL_SHEIKH', 'EL_GHARDQA', 'EL_AIN_SOKHNA', 'DAHAB'])
+    .optional(),
+  initial_price: z.coerce
     .number()
     .min(0)
     .transform((val) => new Prisma.Decimal(val))
     .optional(),
-  features: z.array(z.string().trim().min(1).max(255)).optional(),
-  deleteAssetIds: z
-    .union([
-      z.array(uuidLike),
-      uuidLike.transform((v) => [v]), // دعم قيمة واحدة بدون array
-    ])
+  stars: z.enum(['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE']).optional(),
+  rating: z
+    .enum(['UNRATED', 'MOST_BOOKED', 'TOP_RATED', 'LOWEST_PRICE'])
     .optional(),
-}) satisfies ZodType<UpdateHotelRequest>;
+  is_discounted: z
+    .union([z.boolean(), z.string().transform((val) => val === 'true')])
+    .optional(),
+  discount_percentage: z.coerce
+    .number()
+    .min(0)
+    .max(100)
+    .transform((val) => new Prisma.Decimal(val))
+    .optional(),
+  original_price: z.coerce
+    .number()
+    .min(0)
+    .transform((val) => new Prisma.Decimal(val))
+    .optional(),
+  youtube_video_url: z.string().url().optional(),
+  translations: translationsField.optional(),
+  rooms: roomsField,
+  addons: addonsField,
+  deleteAssetIds: z
+    .union([z.array(uuidLike), uuidLike.transform((v) => [v])])
+    .optional(),
+});
 
 export const hotelPaginationSchema = paginationSchema.extend({
-  name: z.string().min(1).max(255).optional(),
-  city: z.string().min(2).max(100).optional(),
-  stars: z.enum(['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE']).optional(),
-}) satisfies ZodType<HotelQuery>;
+  destination: z
+    .enum(['SHARM_EL_SHEIKH', 'EL_GHARDQA', 'EL_AIN_SOKHNA', 'DAHAB'])
+    .optional(),
+  rating: z
+    .enum(['UNRATED', 'MOST_BOOKED', 'TOP_RATED', 'LOWEST_PRICE'])
+    .optional(),
+}) satisfies z.ZodType<HotelQuery>;

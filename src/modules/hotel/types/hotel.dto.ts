@@ -1,15 +1,43 @@
-import { hotels, Prisma } from 'generated/prisma/client';
+import {
+  DestinatiosnEnum,
+  HotelFilterRating,
+  hotels_stars,
+  LanguageEnum,
+  Prisma,
+} from 'generated/prisma/client';
 
-export type CreateHotelDto = Pick<
-  hotels,
-  | 'name'
-  | 'description'
-  | 'city'
-  | 'duration'
-  | 'stars'
-  | 'price_per_night'
-  | 'features'
->;
+export type TranslationInput = {
+  language: LanguageEnum;
+  name: string;
+  slug: string;
+  description: string;
+  Facilities: Prisma.JsonValue;
+};
+
+export type RoomInput = {
+  price: Prisma.Decimal;
+  capacity: string;
+  translations: { language: LanguageEnum; name: string }[];
+};
+
+export type AddonInput = {
+  price: Prisma.Decimal;
+  translations: { language: LanguageEnum; name: string; description: string }[];
+};
+
+export type CreateHotelDto = {
+  destination: DestinatiosnEnum;
+  initial_price: Prisma.Decimal;
+  stars: hotels_stars;
+  rating: HotelFilterRating;
+  is_discounted?: boolean;
+  discount_percentage?: Prisma.Decimal;
+  original_price?: Prisma.Decimal;
+  youtube_video_url?: string;
+  translations: TranslationInput[];
+  rooms?: RoomInput[];
+  addons?: AddonInput[];
+};
 
 export type UpdateHotelDto = Partial<CreateHotelDto>;
 
@@ -18,5 +46,5 @@ export type UpdateHotelRequest = UpdateHotelDto & {
 };
 
 export type HotelResponseDTO = Prisma.hotelsGetPayload<{
-  include: { assets: true };
+  include: { assets: true; translations: true; rooms: true; addons: true };
 }>;

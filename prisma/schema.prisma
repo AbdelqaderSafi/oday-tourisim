@@ -77,75 +77,101 @@ model gallery {
 }
 
 model hotels {
-  id            String      @id @default(uuid()) @db.VarChar(36)
-  name         String       @db.VarChar(255)
-  destination  DestinatiosnEnum       
-  slug         String       @db.VarChar(255) @unique
-  initial_price Decimal      @db.Decimal(10, 2)
-  description  String      @db.Text
-  stars        hotels_stars
-  rating       HotelFilterRating
-  is_discounted Boolean      @default(false)
-  discount_percentage Decimal?     @db.Decimal(5, 2)
-  original_price Decimal?     @db.Decimal(10, 2)
-  youtube_video_url String?      @db.Text
-  Facilities     Json
+  id                  String            @id @default(uuid()) @db.VarChar(36)
+  destination         DestinatiosnEnum
+  initial_price       Decimal           @db.Decimal(10, 2)
+  stars               hotels_stars
+  rating              HotelFilterRating
+  is_discounted       Boolean           @default(false)
+  discount_percentage Decimal?          @db.Decimal(5, 2)
+  original_price      Decimal?          @db.Decimal(10, 2)
+  youtube_video_url   String?           @db.Text
 
-  is_deleted   Boolean      @default(false)
-  created_at  DateTime       @default(now())
-  updated_at  DateTime       @updatedAt
+  is_deleted          Boolean           @default(false)
+  created_at          DateTime          @default(now())
+  updated_at          DateTime          @updatedAt
 
-  rooms     Room[]
-  addons    Addon[]
-
-  translations  HotelTranslation[]
-
-  checkouts Checkout[]
-  assets    Asset[]    @relation("HotelAssets")
+  rooms        Room[]
+  addons       Addon[]
+  translations HotelTranslation[]
+  checkouts    Checkout[]
+  assets       Asset[]    @relation("HotelAssets")
 }
+
 model HotelTranslation {
-  id          String @id @default(uuid()) @db.VarChar(36)
-  hotel_id    String @db.VarChar(36)
-  language    String @db.VarChar(2) // القيم ستكون 'ar' أو 'en'
-  
-  // الحقول المترجمة
-  name        String @db.VarChar(255)
-  slug        String @db.VarChar(255) @unique // يفضل أن يكون الـ slug مترجماً ومميزاً ليفيد في الـ SEO
-  description String @db.Text
+  id          String       @id @default(uuid()) @db.VarChar(36)
+  hotel_id    String       @db.VarChar(36)
+  language    LanguageEnum
 
-  // الربط مع الفندق الأساسي
-  hotel       hotels @relation(fields: [hotel_id], references: [id], onDelete: Cascade)
+  name        String       @db.VarChar(255)
+  slug        String       @db.VarChar(255) @unique
+  description String       @db.Text
+  Facilities  Json
 
-  // قيد لمنع تكرار نفس اللغة لنفس الفندق
+  hotel       hotels       @relation(fields: [hotel_id], references: [id], onDelete: Cascade)
+
   @@unique([hotel_id, language])
+  @@map("hotel_translations")
 }
 
 model Addon {
   id          String   @id @default(uuid()) @db.VarChar(36)
-  name        String   @db.VarChar(255)       
-  description String  @db.Text             
-  price       Decimal  @db.Decimal(10, 2)   
-  
+  price       Decimal  @db.Decimal(10, 2)
+
   hotel_id    String   @db.VarChar(36)
   hotel       hotels   @relation(fields: [hotel_id], references: [id], onDelete: Cascade)
+
+  translations AddonTranslation[]
 
   is_deleted  Boolean  @default(false)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
+
+  @@map("addon")
+}
+
+model AddonTranslation {
+  id          String       @id @default(uuid()) @db.VarChar(36)
+  addon_id    String       @db.VarChar(36)
+  language    LanguageEnum
+
+  name        String       @db.VarChar(255)
+  description String       @db.Text
+
+  addon       Addon        @relation(fields: [addon_id], references: [id], onDelete: Cascade)
+
+  @@unique([addon_id, language])
+  @@map("addon_translations")
 }
 
 model Room {
   id         String   @id @default(uuid()) @db.VarChar(36)
-  name       String   @db.VarChar(255)      
-  capacity   String   @db.VarChar(50)       
-  price      Decimal  @db.Decimal(10, 2)     
-  
+  capacity   String   @db.VarChar(50)
+  price      Decimal  @db.Decimal(10, 2)
+
   hotel_id   String   @db.VarChar(36)
   hotel      hotels   @relation(fields: [hotel_id], references: [id], onDelete: Cascade)
+
+  translations RoomTranslation[]
 
   is_deleted Boolean  @default(false)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  @@map("room")
+}
+
+model RoomTranslation {
+  id        String       @id @default(uuid()) @db.VarChar(36)
+  room_id   String       @db.VarChar(36)
+  language  LanguageEnum
+
+  name      String       @db.VarChar(255)
+
+  room      Room         @relation(fields: [room_id], references: [id], onDelete: Cascade)
+
+  @@unique([room_id, language])
+  @@map("room_translations")
 }
 
 model offers {
@@ -227,6 +253,11 @@ model Asset {
 
   @@map("assets")
 }
+enum LanguageEnum {
+  ar
+  en
+}
+
 enum HotelFilterRating {
   UNRATED 
   MOST_BOOKED

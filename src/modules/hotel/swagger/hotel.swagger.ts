@@ -12,62 +12,91 @@ export const CreateHotelSwagger = () =>
   applyDecorators(
     ApiOperation({
       summary: 'إنشاء فندق جديد',
-      description: 'إنشاء فندق مع رفع صورة أو أكثر (حتى 10 صور)',
+      description:
+        'إنشاء فندق مع الترجمات (عربي/إنجليزي) ورفع صور رئيسية وفرعية',
     }),
     ApiConsumes('multipart/form-data'),
     ApiBody({
       schema: {
         type: 'object',
         required: [
-          'name',
-          'description',
-          'city',
-          'duration',
+          'destination',
+          'initial_price',
           'stars',
-          'price_per_night',
-          'file',
+          'rating',
+          'translations',
+          'mainImages',
         ],
         properties: {
-          name: {
+          destination: {
             type: 'string',
-            example: 'فندق النخيل',
-            minLength: 2,
-            maxLength: 100,
+            enum: ['SHARM_EL_SHEIKH', 'EL_GHARDQA', 'EL_AIN_SOKHNA', 'DAHAB'],
+            example: 'SHARM_EL_SHEIKH',
           },
-          description: {
-            type: 'string',
-            example: 'فندق فاخر في قلب المدينة',
-            minLength: 2,
-            maxLength: 1000,
-          },
-          city: {
-            type: 'string',
-            example: 'دبي',
-            minLength: 2,
-            maxLength: 100,
-          },
-          duration: {
-            type: 'string',
-            example: '3 ليالي',
-            minLength: 1,
-            maxLength: 50,
-          },
+          initial_price: { type: 'number', example: 250, minimum: 0 },
           stars: {
             type: 'string',
             enum: ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE'],
             example: 'FIVE',
           },
-          price_per_night: { type: 'number', example: 250, minimum: 0 },
-          'features[0]': {
+          rating: {
             type: 'string',
-            example: 'مسبح',
-            description: 'ميزة الفندق (كرر للمزيد)',
+            enum: ['UNRATED', 'MOST_BOOKED', 'TOP_RATED', 'LOWEST_PRICE'],
+            example: 'UNRATED',
           },
-          'features[1]': { type: 'string', example: 'واي فاي مجاني' },
-          file: {
+          is_discounted: {
+            type: 'boolean',
+            example: false,
+            default: false,
+          },
+          discount_percentage: {
+            type: 'number',
+            example: 10,
+            minimum: 0,
+            maximum: 100,
+            description: 'نسبة الخصم (اختياري)',
+          },
+          original_price: {
+            type: 'number',
+            example: 300,
+            minimum: 0,
+            description: 'السعر الأصلي قبل الخصم (اختياري)',
+          },
+          youtube_video_url: {
+            type: 'string',
+            example: 'https://www.youtube.com/watch?v=example',
+            description: 'رابط فيديو يوتيوب (اختياري)',
+          },
+          translations: {
+            type: 'string',
+            example:
+              '[{"language":"ar","name":"فندق النخيل","slug":"hotel-nakheel","description":"فندق فاخر في قلب المدينة","Facilities":["مسبح","واي فاي مجاني","سبا"]},{"language":"en","name":"Al Nakheel Hotel","slug":"al-nakheel-hotel","description":"A luxury hotel in the heart of the city","Facilities":["Pool","Free WiFi","Spa"]}]',
+            description:
+              'JSON string - مصفوفة الترجمات (عربي وإنجليزي). كل ترجمة تحتوي: language, name, slug, description, Facilities',
+          },
+          mainImages: {
             type: 'array',
             items: { type: 'string', format: 'binary' },
-            description: 'صور الفندق (حتى 10 صور)',
+            description: 'الصور الرئيسية للفندق (حتى 5 صور)',
+          },
+          subImages: {
+            type: 'array',
+            items: { type: 'string', format: 'binary' },
+            description: 'صور المعرض الفرعية (حتى 20 صورة)',
+          },
+          rooms: {
+            type: 'string',
+            example:
+              '[{"price":150,"capacity":"2","translations":[{"language":"ar","name":"غرفة ديلوكس"},{"language":"en","name":"Deluxe Room"}]}]',
+            description:
+              'JSON string - مصفوفة الغرف (اختياري). كل غرفة تحتوي: price, capacity, translations[]',
+          },
+          addons: {
+            type: 'string',
+            example:
+              '[{"price":50,"translations":[{"language":"ar","name":"إفطار","description":"وجبة إفطار فاخرة"},{"language":"en","name":"Breakfast","description":"Luxury breakfast"}]}]',
+            description:
+              'JSON string - مصفوفة الإضافات (اختياري). كل إضافة تحتوي: price, translations[]',
           },
         },
       },
@@ -81,7 +110,8 @@ export const FindAllHotelsSwagger = () =>
   applyDecorators(
     ApiOperation({
       summary: 'جلب جميع الفنادق',
-      description: 'جلب الفنادق مع دعم الفلترة والـ pagination',
+      description:
+        'جلب الفنادق مع الترجمات والصور، مع دعم الفلترة والـ pagination',
     }),
     ApiQuery({
       name: 'page',
@@ -98,28 +128,20 @@ export const FindAllHotelsSwagger = () =>
       description: 'عدد العناصر في الصفحة',
     }),
     ApiQuery({
-      name: 'name',
+      name: 'destination',
       required: false,
-      type: String,
-      example: 'النخيل',
-      description: 'البحث باسم الفندق',
+      enum: ['SHARM_EL_SHEIKH', 'EL_GHARDQA', 'EL_AIN_SOKHNA', 'DAHAB'],
+      description: 'فلتر حسب الوجهة',
     }),
     ApiQuery({
-      name: 'city',
+      name: 'rating',
       required: false,
-      type: String,
-      example: 'دبي',
-      description: 'فلتر حسب المدينة',
-    }),
-    ApiQuery({
-      name: 'stars',
-      required: false,
-      enum: ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE'],
-      description: 'فلتر حسب عدد النجوم',
+      enum: ['UNRATED', 'MOST_BOOKED', 'TOP_RATED', 'LOWEST_PRICE'],
+      description: 'فلتر حسب التقييم',
     }),
     ApiResponse({
       status: 200,
-      description: 'قائمة الفنادق مع بيانات الـ pagination',
+      description: 'قائمة الفنادق مع الترجمات وبيانات الـ pagination',
     }),
   );
 
@@ -127,7 +149,7 @@ export const FindOneHotelSwagger = () =>
   applyDecorators(
     ApiOperation({
       summary: 'جلب فندق بالـ ID',
-      description: 'جلب بيانات فندق محدد مع جميع صوره',
+      description: 'جلب بيانات فندق محدد مع جميع ترجماته وصوره',
     }),
     ApiParam({
       name: 'id',
@@ -136,26 +158,92 @@ export const FindOneHotelSwagger = () =>
     }),
     ApiResponse({
       status: 200,
-      description: 'بيانات الفندق مع الصور',
+      description: 'بيانات الفندق مع الترجمات والصور',
       schema: {
         example: {
           id: 'bf176f2b-d79a-4b70-a8dd-e9f86f191371',
-          name: 'فندق النخيل',
-          description: 'فندق فاخر في قلب المدينة',
+          destination: 'SHARM_EL_SHEIKH',
+          initial_price: '250.00',
           stars: 'FIVE',
-          city: 'دبي',
-          duration: '3 ليالي',
-          price_per_night: '250.00',
-          features: ['مسبح', 'واي فاي مجاني'],
+          rating: 'TOP_RATED',
+          is_discounted: false,
+          discount_percentage: null,
+          original_price: null,
+          youtube_video_url: null,
           is_deleted: false,
           created_at: '2026-03-07T10:00:00.000Z',
           updated_at: '2026-03-07T10:00:00.000Z',
+          translations: [
+            {
+              id: 'uuid-1',
+              hotel_id: 'bf176f2b-d79a-4b70-a8dd-e9f86f191371',
+              language: 'ar',
+              name: 'فندق النخيل',
+              slug: 'hotel-nakheel',
+              description: 'فندق فاخر في قلب المدينة',
+              Facilities: ['مسبح', 'واي فاي مجاني'],
+            },
+            {
+              id: 'uuid-2',
+              hotel_id: 'bf176f2b-d79a-4b70-a8dd-e9f86f191371',
+              language: 'en',
+              name: 'Al Nakheel Hotel',
+              slug: 'al-nakheel-hotel',
+              description: 'A luxury hotel in the heart of the city',
+              Facilities: ['Pool', 'Free WiFi'],
+            },
+          ],
           assets: [
             {
               id: 'uuid',
               url: 'https://ik.imagekit.io/...',
               fileType: 'image/jpeg',
-              kind: 'HOTEL_IMAGE',
+              kind: 'HOTEL_MAIN_IMAGE',
+            },
+          ],
+          rooms: [
+            {
+              id: 'room-uuid',
+              capacity: '2',
+              price: '150.00',
+              is_deleted: false,
+              translations: [
+                {
+                  id: 'rt-1',
+                  room_id: 'room-uuid',
+                  language: 'ar',
+                  name: 'غرفة ديلوكس',
+                },
+                {
+                  id: 'rt-2',
+                  room_id: 'room-uuid',
+                  language: 'en',
+                  name: 'Deluxe Room',
+                },
+              ],
+            },
+          ],
+          addons: [
+            {
+              id: 'addon-uuid',
+              price: '50.00',
+              is_deleted: false,
+              translations: [
+                {
+                  id: 'at-1',
+                  addon_id: 'addon-uuid',
+                  language: 'ar',
+                  name: 'إفطار',
+                  description: 'وجبة إفطار فاخرة',
+                },
+                {
+                  id: 'at-2',
+                  addon_id: 'addon-uuid',
+                  language: 'en',
+                  name: 'Breakfast',
+                  description: 'Luxury breakfast',
+                },
+              ],
             },
           ],
         },
@@ -168,7 +256,8 @@ export const UpdateHotelSwagger = () =>
   applyDecorators(
     ApiOperation({
       summary: 'تعديل فندق',
-      description: 'تعديل بيانات الفندق. يمكن حذف صور محددة عبر deleteAssetIds وإضافة صور جديدة عبر file',
+      description:
+        'تعديل بيانات الفندق وترجماته وغرفه وإضافاته. يمكن حذف صور عبر deleteAssetIds وإضافة صور رئيسية عبر mainImages وصور معرض عبر subImages',
     }),
     ApiConsumes('multipart/form-data'),
     ApiParam({
@@ -180,19 +269,65 @@ export const UpdateHotelSwagger = () =>
       schema: {
         type: 'object',
         properties: {
-          name:                  { type: 'string', example: 'فندق النخيل المحدث', minLength: 2, maxLength: 100 },
-          description:           { type: 'string', example: 'وصف محدث', minLength: 2, maxLength: 1000 },
-          city:                  { type: 'string', example: 'أبوظبي', minLength: 2, maxLength: 100 },
-          duration:              { type: 'string', example: '5 ليالي', minLength: 1, maxLength: 50 },
-          stars:                 { type: 'string', enum: ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE'], example: 'FOUR' },
-          price_per_night:       { type: 'number', example: 300, minimum: 0 },
-          'features[0]':         { type: 'string', example: 'سبا', description: 'ميزة (اختياري)' },
-          'deleteAssetIds[0]':   { type: 'string', format: 'uuid', description: 'معرّف صورة لحذفها' },
-          'deleteAssetIds[1]':   { type: 'string', format: 'uuid', description: 'معرّف صورة لحذفها' },
-          file: {
+          destination: {
+            type: 'string',
+            enum: ['SHARM_EL_SHEIKH', 'EL_GHARDQA', 'EL_AIN_SOKHNA', 'DAHAB'],
+            example: 'EL_GHARDQA',
+          },
+          initial_price: { type: 'number', example: 300, minimum: 0 },
+          stars: {
+            type: 'string',
+            enum: ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE'],
+            example: 'FOUR',
+          },
+          rating: {
+            type: 'string',
+            enum: ['UNRATED', 'MOST_BOOKED', 'TOP_RATED', 'LOWEST_PRICE'],
+          },
+          is_discounted: { type: 'boolean' },
+          discount_percentage: { type: 'number', minimum: 0, maximum: 100 },
+          original_price: { type: 'number', minimum: 0 },
+          youtube_video_url: { type: 'string' },
+          translations: {
+            type: 'string',
+            example:
+              '[{"language":"ar","name":"فندق النخيل المحدث","slug":"hotel-nakheel-updated","description":"وصف محدث","Facilities":["مسبح","سبا"]}]',
+            description:
+              'JSON string - الترجمات المراد تحديثها (upsert). كل ترجمة تحتوي: language, name, slug, description, Facilities',
+          },
+          rooms: {
+            type: 'string',
+            example:
+              '[{"price":150,"capacity":"2","translations":[{"language":"ar","name":"غرفة ديلوكس"},{"language":"en","name":"Deluxe Room"}]}]',
+            description:
+              'JSON string - غرف جديدة تُضاف للفندق (اختياري). كل غرفة تحتوي: price, capacity, translations[]',
+          },
+          addons: {
+            type: 'string',
+            example:
+              '[{"price":50,"translations":[{"language":"ar","name":"إفطار","description":"وجبة إفطار فاخرة"},{"language":"en","name":"Breakfast","description":"Luxury breakfast"}]}]',
+            description:
+              'JSON string - إضافات جديدة تُضاف للفندق (اختياري). كل إضافة تحتوي: price, translations[]',
+          },
+          'deleteAssetIds[0]': {
+            type: 'string',
+            format: 'uuid',
+            description: 'معرّف صورة لحذفها',
+          },
+          'deleteAssetIds[1]': {
+            type: 'string',
+            format: 'uuid',
+            description: 'معرّف صورة لحذفها',
+          },
+          mainImages: {
             type: 'array',
             items: { type: 'string', format: 'binary' },
-            description: 'صور جديدة تُضاف للفندق (اختياري)',
+            description: 'صور رئيسية جديدة تُضاف للفندق (حتى 5 صور)',
+          },
+          subImages: {
+            type: 'array',
+            items: { type: 'string', format: 'binary' },
+            description: 'صور معرض جديدة تُضاف للفندق (حتى 20 صورة)',
           },
         },
       },
@@ -206,7 +341,11 @@ export const UpdateHotelSwagger = () =>
 export const DeleteHotelSwagger = () =>
   applyDecorators(
     ApiOperation({ summary: 'حذف فندق' }),
-    ApiParam({ name: 'id', description: 'معرّف الفندق', example: 'uuid-here' }),
+    ApiParam({
+      name: 'id',
+      description: 'معرّف الفندق',
+      example: 'uuid-here',
+    }),
     ApiResponse({ status: 200, description: 'تم الحذف بنجاح' }),
     ApiResponse({ status: 404, description: 'الفندق غير موجود' }),
   );

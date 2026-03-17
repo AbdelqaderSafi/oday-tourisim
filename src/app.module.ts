@@ -4,9 +4,10 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { ConfigModule } from '@nestjs/config';
 import { HotelModule } from './modules/hotel/hotel.module';
-import { file } from 'zod';
 import { FileModule } from './modules/file/file.module';
 import { OfferModule } from './modules/offer/offer.module';
+import { RoomModule } from './modules/room/room.module';
+import { AddonModule } from './modules/addon/addon.module';
 
 @Module({
   imports: [
@@ -19,6 +20,8 @@ import { OfferModule } from './modules/offer/offer.module';
     HotelModule,
     FileModule,
     OfferModule,
+    RoomModule,
+    AddonModule,
   ],
   controllers: [],
   providers: [],

@@ -17,43 +17,7 @@ export class HotelService {
     private readonly prismaService: DatabaseService,
     private readonly filesService: FileService,
   ) {}
-  // async create(
-  //   createHotelDto: CreateHotelDto,
-  //   files: Array<Express.Multer.File>,
-  // ) {
-  //   if (!files || files.length === 0) {
-  //     throw new BadRequestException('يجب إرفاق صورة واحدة على الأقل للفندق');
-  //   }
 
-  //   const hotelId = randomUUID();
-  //   const { features, ...rest } = createHotelDto;
-
-  //   return this.prismaService.$transaction(async (tx) => {
-  //     await tx.hotels.create({
-  //       data: {
-  //         id: hotelId,
-  //         ...rest,
-  //         features: features as Prisma.InputJsonValue,
-  //       },
-  //     });
-
-  //     const now = new Date();
-  //     for (const file of files) {
-  //       await tx.$executeRaw`
-  //         INSERT INTO assets
-  //           (id, storage_provider_name, file_id, url, file_type, file_size_in_kb, kind, hotel_id, created_at, updated_at)
-  //         VALUES
-  //           (${randomUUID()}, 'IMAGE_KIT', ${file.fileId!}, ${file.url!}, ${file.mimetype}, ${Math.floor(file.size / 1024)}, 'HOTEL_IMAGE', ${hotelId}, ${now}, ${now})
-  //       `;
-  //     }
-
-  //     // 3. إرجاع الفندق مع الـ assets
-  //     return tx.hotels.findUniqueOrThrow({
-  //       where: { id: hotelId },
-  //       include: { assets: true },
-  //     });
-  //   });
-  // }
   async create(
     createHotelDto: CreateHotelDto,
     files: {
@@ -61,7 +25,6 @@ export class HotelService {
       subImages?: Express.Multer.File[];
     },
   ) {
-    // 1. التحقق من وجود صورة رئيسية واحدة على الأقل
     if (!files?.mainImages || files.mainImages.length === 0) {
       throw new BadRequestException(
         'يجب إرفاق صورة رئيسية واحدة على الأقل للفندق',
@@ -69,35 +32,79 @@ export class HotelService {
     }
 
     const hotelId = randomUUID();
-    const { features, ...rest } = createHotelDto;
+    const { translations, rooms, addons, ...rest } = createHotelDto;
 
     return this.prismaService.$transaction(async (tx) => {
-      // 2. إنشاء الفندق
       await tx.hotels.create({
         data: {
           id: hotelId,
           ...rest,
-          features: features as Prisma.InputJsonValue,
         },
       });
 
-      const now = new Date();
+      for (const translation of translations) {
+        const { Facilities, ...translationRest } = translation;
+        await tx.hotelTranslation.create({
+          data: {
+            hotel_id: hotelId,
+            ...translationRest,
+            Facilities: Facilities as Prisma.InputJsonValue,
+          },
+        });
+      }
 
-      // 3. تجميع الصور الرئيسية والفرعية في مصفوفة واحدة مع تحديد نوع كل صورة (kind)
+      if (rooms?.length) {
+        for (const room of rooms) {
+          const roomId = randomUUID();
+          const { translations: roomTranslations, price, ...roomRest } = room;
+          await tx.room.create({
+            data: {
+              id: roomId,
+              hotel_id: hotelId,
+              price: price as Prisma.Decimal,
+              ...roomRest,
+            },
+          });
+          for (const t of roomTranslations) {
+            await tx.roomTranslation.create({
+              data: { room_id: roomId, ...t },
+            });
+          }
+        }
+      }
+
+      if (addons?.length) {
+        for (const addon of addons) {
+          const addonId = randomUUID();
+          const { translations: addonTranslations, price } = addon;
+          await tx.addon.create({
+            data: {
+              id: addonId,
+              hotel_id: hotelId,
+              price: price as Prisma.Decimal,
+            },
+          });
+          for (const t of addonTranslations) {
+            await tx.addonTranslation.create({
+              data: { addon_id: addonId, ...t },
+            });
+          }
+        }
+      }
+
+      const now = new Date();
       const allAssets = [
         ...(files.mainImages || []).map((file) => ({
           ...file,
-          kind: 'HOTEL_MAIN_IMAGE', // يمكنك تغيير هذا النص ليطابق الـ Enum في قاعدة بياناتك
+          kind: 'HOTEL_MAIN_IMAGE',
         })),
         ...(files.subImages || []).map((file) => ({
           ...file,
-          kind: 'HOTEL_SUB_IMAGE', // يمكنك تغيير هذا النص ليطابق الـ Enum في قاعدة بياناتك
+          kind: 'HOTEL_GALLERY_IMAGE',
         })),
       ];
 
-      // 4. إدخال الصور في جدول assets
       for (const file of allAssets) {
-        // افترضت هنا أن الخصائص fileId و url تأتي من الـ Interceptor أو من مكتبة الرفع المخصصة بك (مثل ImageKit)
         await tx.$executeRaw`
           INSERT INTO assets
             (id, storage_provider_name, file_id, url, file_type, file_size_in_kb, kind, hotel_id, created_at, updated_at)
@@ -106,10 +113,14 @@ export class HotelService {
         `;
       }
 
-      // 5. إرجاع الفندق مع الـ assets
       return tx.hotels.findUniqueOrThrow({
         where: { id: hotelId },
-        include: { assets: true },
+        include: {
+          assets: true,
+          translations: true,
+          rooms: { include: { translations: true } },
+          addons: { include: { translations: true } },
+        },
       });
     });
   }
@@ -117,16 +128,21 @@ export class HotelService {
   findAll(query: HotelQuery) {
     return this.prismaService.$transaction(async (prisma) => {
       const whereClause: Prisma.hotelsWhereInput = {
-        ...(query.name && { name: { contains: query.name } }),
-        ...(query.city && { city: { contains: query.city } }),
-        ...(query.stars && { stars: query.stars }),
+        ...(query.destination && { destination: query.destination }),
+        ...(query.rating && { rating: query.rating }),
         is_deleted: false,
       };
+
       const pagination = this.prismaService.handleQueryPagination(query);
       const hotels = await prisma.hotels.findMany({
         ...removeFields(pagination, ['page']),
         where: whereClause,
-        include: { assets: true },
+        include: {
+          assets: true,
+          translations: true,
+          rooms: { include: { translations: true } },
+          addons: { include: { translations: true } },
+        },
       });
 
       const count = await prisma.hotels.count({
@@ -147,22 +163,31 @@ export class HotelService {
   findOne(id: string) {
     return this.prismaService.hotels.findUnique({
       where: { id },
-      include: { assets: true },
+      include: {
+        assets: true,
+        translations: true,
+        rooms: { include: { translations: true } },
+        addons: { include: { translations: true } },
+      },
     });
   }
 
   async update(
     id: string,
     updateHotelDto: UpdateHotelRequest,
-    files?: Express.Multer.File[],
+    files?: {
+      mainImages?: Express.Multer.File[];
+      subImages?: Express.Multer.File[];
+    },
   ) {
     const hotel = await this.prismaService.hotels.findUnique({
       where: { id },
-      include: { assets: true },
+      include: { assets: true, translations: true },
     });
     if (!hotel) throw new NotFoundException('الفندق غير موجود');
 
-    const { features, deleteAssetIds, ...rest } = updateHotelDto;
+    const { deleteAssetIds, translations, rooms, addons, ...rest } =
+      updateHotelDto;
 
     const fileIdsToDelete = hotel.assets
       .filter((a) => deleteAssetIds?.includes(a.id))
@@ -178,22 +203,85 @@ export class HotelService {
 
       await tx.hotels.update({
         where: { id },
-        data: {
-          ...rest,
-          ...(features !== undefined && {
-            features: features as Prisma.InputJsonValue,
-          }),
-        },
+        data: rest,
       });
 
-      if (files?.length) {
+      if (translations?.length) {
+        for (const translation of translations) {
+          const { Facilities, ...translationRest } = translation;
+          await tx.hotelTranslation.upsert({
+            where: {
+              hotel_id_language: {
+                hotel_id: id,
+                language: translation.language,
+              },
+            },
+            update: {
+              ...translationRest,
+              Facilities: Facilities as Prisma.InputJsonValue,
+            },
+            create: {
+              hotel_id: id,
+              ...translationRest,
+              Facilities: Facilities as Prisma.InputJsonValue,
+            },
+          });
+        }
+      }
+
+      if (rooms?.length) {
+        for (const room of rooms) {
+          const roomId = randomUUID();
+          const { translations: roomTranslations, price, ...roomRest } = room;
+          await tx.room.create({
+            data: {
+              id: roomId,
+              hotel_id: id,
+              price: price as Prisma.Decimal,
+              ...roomRest,
+            },
+          });
+          for (const t of roomTranslations) {
+            await tx.roomTranslation.create({
+              data: { room_id: roomId, ...t },
+            });
+          }
+        }
+      }
+
+      if (addons?.length) {
+        for (const addon of addons) {
+          const addonId = randomUUID();
+          const { translations: addonTranslations, price } = addon;
+          await tx.addon.create({
+            data: { id: addonId, hotel_id: id, price: price as Prisma.Decimal },
+          });
+          for (const t of addonTranslations) {
+            await tx.addonTranslation.create({
+              data: { addon_id: addonId, ...t },
+            });
+          }
+        }
+      }
+
+      if (files?.mainImages?.length || files?.subImages?.length) {
         const now = new Date();
-        for (const file of files) {
+        const allAssets = [
+          ...(files.mainImages || []).map((file) => ({
+            ...file,
+            kind: 'HOTEL_MAIN_IMAGE',
+          })),
+          ...(files.subImages || []).map((file) => ({
+            ...file,
+            kind: 'HOTEL_GALLERY_IMAGE',
+          })),
+        ];
+        for (const file of allAssets) {
           await tx.$executeRaw`
             INSERT INTO assets
               (id, storage_provider_name, file_id, url, file_type, file_size_in_kb, kind, hotel_id, created_at, updated_at)
             VALUES
-              (${randomUUID()}, 'IMAGE_KIT', ${file.fileId!}, ${file.url!}, ${file.mimetype}, ${Math.floor(file.size / 1024)}, 'HOTEL_IMAGE', ${id}, ${now}, ${now})
+              (${randomUUID()}, 'IMAGE_KIT', ${file['fileId']!}, ${file['url']!}, ${file.mimetype}, ${Math.floor(file.size / 1024)}, ${file.kind}, ${id}, ${now}, ${now})
           `;
         }
       }
@@ -207,7 +295,12 @@ export class HotelService {
 
     return this.prismaService.hotels.findUniqueOrThrow({
       where: { id },
-      include: { assets: true },
+      include: {
+        assets: true,
+        translations: true,
+        rooms: { include: { translations: true } },
+        addons: { include: { translations: true } },
+      },
     });
   }
 

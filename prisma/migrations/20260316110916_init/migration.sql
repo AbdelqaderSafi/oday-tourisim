@@ -72,17 +72,81 @@ CREATE TABLE `gallery` (
 -- CreateTable
 CREATE TABLE `hotels` (
     `id` VARCHAR(36) NOT NULL,
-    `name` VARCHAR(255) NOT NULL,
-    `description` TEXT NULL,
+    `destination` ENUM('SHARM_EL_SHEIKH', 'EL_GHARDQA', 'EL_AIN_SOKHNA', 'DAHAB') NOT NULL,
+    `initial_price` DECIMAL(10, 2) NOT NULL,
     `stars` ENUM('ONE', 'TWO', 'THREE', 'FOUR', 'FIVE') NOT NULL,
-    `features` JSON NOT NULL,
+    `rating` ENUM('UNRATED', 'MOST_BOOKED', 'TOP_RATED', 'LOWEST_PRICE') NOT NULL,
+    `is_discounted` BOOLEAN NOT NULL DEFAULT false,
+    `discount_percentage` DECIMAL(5, 2) NULL,
+    `original_price` DECIMAL(10, 2) NULL,
+    `youtube_video_url` TEXT NULL,
     `is_deleted` BOOLEAN NOT NULL DEFAULT false,
-    `city` VARCHAR(255) NOT NULL,
-    `price_per_night` DECIMAL(10, 2) NOT NULL,
-    `duration` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
 
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `hotel_translations` (
+    `id` VARCHAR(36) NOT NULL,
+    `hotel_id` VARCHAR(36) NOT NULL,
+    `language` ENUM('ar', 'en') NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `slug` VARCHAR(255) NOT NULL,
+    `description` TEXT NOT NULL,
+    `Facilities` JSON NOT NULL,
+
+    UNIQUE INDEX `hotel_translations_slug_key`(`slug`),
+    UNIQUE INDEX `hotel_translations_hotel_id_language_key`(`hotel_id`, `language`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `addon` (
+    `id` VARCHAR(36) NOT NULL,
+    `price` DECIMAL(10, 2) NOT NULL,
+    `hotel_id` VARCHAR(36) NOT NULL,
+    `is_deleted` BOOLEAN NOT NULL DEFAULT false,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `addon_translations` (
+    `id` VARCHAR(36) NOT NULL,
+    `addon_id` VARCHAR(36) NOT NULL,
+    `language` ENUM('ar', 'en') NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `description` TEXT NOT NULL,
+
+    UNIQUE INDEX `addon_translations_addon_id_language_key`(`addon_id`, `language`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `room` (
+    `id` VARCHAR(36) NOT NULL,
+    `capacity` VARCHAR(50) NOT NULL,
+    `price` DECIMAL(10, 2) NOT NULL,
+    `hotel_id` VARCHAR(36) NOT NULL,
+    `is_deleted` BOOLEAN NOT NULL DEFAULT false,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `room_translations` (
+    `id` VARCHAR(36) NOT NULL,
+    `room_id` VARCHAR(36) NOT NULL,
+    `language` ENUM('ar', 'en') NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+
+    UNIQUE INDEX `room_translations_room_id_language_key`(`room_id`, `language`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -146,7 +210,7 @@ CREATE TABLE `assets` (
     `url` TEXT NOT NULL,
     `file_type` TEXT NOT NULL,
     `file_size_in_kb` INTEGER UNSIGNED NOT NULL,
-    `kind` ENUM('HOTEL_IMAGE', 'TRIP_IMAGE', 'OFFER_IMAGE', 'GALLERY_IMAGE') NOT NULL,
+    `kind` ENUM('HOTEL_MAIN_IMAGE', 'HOTEL_GALLERY_IMAGE', 'TRIP_IMAGE', 'OFFER_IMAGE', 'GALLERY_IMAGE') NOT NULL,
     `hotel_id` VARCHAR(36) NULL,
     `trip_id` VARCHAR(36) NULL,
     `offer_id` VARCHAR(36) NULL,
@@ -170,6 +234,21 @@ ALTER TABLE `checkout` ADD CONSTRAINT `checkout_trip_id_fkey` FOREIGN KEY (`trip
 
 -- AddForeignKey
 ALTER TABLE `checkout` ADD CONSTRAINT `checkout_service_id_fkey` FOREIGN KEY (`service_id`) REFERENCES `services`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `hotel_translations` ADD CONSTRAINT `hotel_translations_hotel_id_fkey` FOREIGN KEY (`hotel_id`) REFERENCES `hotels`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `addon` ADD CONSTRAINT `addon_hotel_id_fkey` FOREIGN KEY (`hotel_id`) REFERENCES `hotels`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `addon_translations` ADD CONSTRAINT `addon_translations_addon_id_fkey` FOREIGN KEY (`addon_id`) REFERENCES `addon`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `room` ADD CONSTRAINT `room_hotel_id_fkey` FOREIGN KEY (`hotel_id`) REFERENCES `hotels`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `room_translations` ADD CONSTRAINT `room_translations_room_id_fkey` FOREIGN KEY (`room_id`) REFERENCES `room`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `assets` ADD CONSTRAINT `assets_hotel_id_fkey` FOREIGN KEY (`hotel_id`) REFERENCES `hotels`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;

@@ -18,11 +18,7 @@ import type {
   UpdateHotelRequest,
 } from './types/hotel.dto';
 import { FileCleanupInterceptor } from '../file/cleanup-file.interceptor';
-import {
-  FileFieldsInterceptor,
-  FileInterceptor,
-  FilesInterceptor,
-} from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ZodValidationPipe } from 'src/pipes/zod.validation.pipe';
 import {
   hotelPaginationSchema,
@@ -44,22 +40,11 @@ import type { HotelQuery } from './types/hotel.types';
 export class HotelController {
   constructor(private readonly hotelService: HotelService) {}
 
-  // @Post()
-  // @UseInterceptors(FilesInterceptor('file', 10), FileCleanupInterceptor)
-  // @CreateHotelSwagger()
-  // create(
-  //   @Body(new ZodValidationPipe(hotelValidationSchema))
-  //   createHotelDto: CreateHotelDto,
-  //   @UploadedFiles()
-  //   files: Array<Express.Multer.File>,
-  // ): Promise<HotelResponseDTO> {
-  //   return this.hotelService.create(createHotelDto, files);
-  // }
   @Post()
   @UseInterceptors(
     FileFieldsInterceptor([
-      { name: 'mainImages', maxCount: 5 }, // خانة الصور الرئيسية (يمكنك تعديل الحد الأقصى)
-      { name: 'subImages', maxCount: 20 }, // خانة الصور الفرعية
+      { name: 'mainImages', maxCount: 5 },
+      { name: 'subImages', maxCount: 20 },
     ]),
     FileCleanupInterceptor,
   )
@@ -73,10 +58,6 @@ export class HotelController {
       subImages?: Express.Multer.File[];
     },
   ): Promise<HotelResponseDTO> {
-    // الآن المتغير files يحتوي على كائن يفصل بين الصور
-    // files.mainImages
-    // files.subImages
-
     return this.hotelService.create(createHotelDto, files);
   }
 
@@ -95,14 +76,23 @@ export class HotelController {
   }
 
   @Patch(':id')
-  @UseInterceptors(FilesInterceptor('file'), FileCleanupInterceptor)
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'mainImages', maxCount: 5 },
+      { name: 'subImages', maxCount: 20 },
+    ]),
+    FileCleanupInterceptor,
+  )
   @UpdateHotelSwagger()
   update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateHotelValidationSchema))
     updatePayload: UpdateHotelRequest,
     @UploadedFiles()
-    files?: Array<Express.Multer.File>,
+    files?: {
+      mainImages?: Express.Multer.File[];
+      subImages?: Express.Multer.File[];
+    },
   ): Promise<HotelResponseDTO> {
     return this.hotelService.update(id, updatePayload, files);
   }
