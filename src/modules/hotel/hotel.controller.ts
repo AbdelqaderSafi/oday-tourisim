@@ -44,7 +44,7 @@ export class HotelController {
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'mainImages', maxCount: 5 },
-      { name: 'subImages', maxCount: 20 },
+      { name: 'subImages', maxCount: 10 },
     ]),
     FileCleanupInterceptor,
   )
@@ -79,7 +79,7 @@ export class HotelController {
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'mainImages', maxCount: 5 },
-      { name: 'subImages', maxCount: 20 },
+      { name: 'subImages', maxCount: 10 },
     ]),
     FileCleanupInterceptor,
   )

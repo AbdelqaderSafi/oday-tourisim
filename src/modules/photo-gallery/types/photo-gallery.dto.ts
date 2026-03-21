@@ -1,5 +1,5 @@
 import { Prisma } from 'generated/prisma/client';
 
-export type OfferResponseDTO = Prisma.offersGetPayload<{
+export type PhotoGalleryResponseDTO = Prisma.PhotoGalleryGetPayload<{
   include: { assets: true };
 }>;

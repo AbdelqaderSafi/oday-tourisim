@@ -13,6 +13,6 @@ export type CreateAddonDto = {
 
 export type UpdateAddonDto = Partial<CreateAddonDto>;
 
-export type AddonResponseDTO = Prisma.AddonGetPayload<{
+export type AddonResponseDTO = Prisma.HotelAddonGetPayload<{
   include: { translations: true };
 }>;

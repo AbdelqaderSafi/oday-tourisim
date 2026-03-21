@@ -8,6 +8,9 @@ import { FileModule } from './modules/file/file.module';
 import { OfferModule } from './modules/offer/offer.module';
 import { RoomModule } from './modules/room/room.module';
 import { AddonModule } from './modules/addon/addon.module';
+import { TripModule } from './modules/trip/trip.module';
+import { SecurityApprovalModule } from './modules/security-approval/security-approval.module';
+import { PhotoGalleryModule } from './modules/photo-gallery/photo-gallery.module';
 
 @Module({
   imports: [
@@ -22,6 +25,9 @@ import { AddonModule } from './modules/addon/addon.module';
     OfferModule,
     RoomModule,
     AddonModule,
+    TripModule,
+    SecurityApprovalModule,
+    PhotoGalleryModule,
   ],
   controllers: [],
   providers: [],

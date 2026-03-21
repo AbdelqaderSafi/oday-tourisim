@@ -2,63 +2,53 @@ import {
   Controller,
   Get,
   Post,
-  Body,
-  Patch,
   Param,
   Delete,
   UseInterceptors,
   UploadedFiles,
 } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { OfferService } from './offer.service';
-import type {
-  CreateOfferDto,
-  OfferResponseDTO,
-  UpdateOfferDto,
-} from './types/offer.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FileCleanupInterceptor } from '../file/cleanup-file.interceptor';
-import { ZodValidationPipe } from 'src/pipes/zod.validation.pipe';
-import {
-  offerValidationSchema,
-  updateOfferValidationSchema,
-} from './util/offer.validation';
+import type { OfferResponseDTO } from './types/offer.dto';
 
+import {
+  CreateOfferSwagger,
+  FindAllOffersSwagger,
+  FindOneOfferSwagger,
+  DeleteOfferSwagger,
+} from './swagger/offer.swagger';
+@ApiTags('Offers')
+@ApiBearerAuth()
 @Controller('offer')
 export class OfferController {
   constructor(private readonly offerService: OfferService) {}
 
   @Post()
-  @UseInterceptors(FilesInterceptor('file', 10), FileCleanupInterceptor)
+  @UseInterceptors(FilesInterceptor('images', 10), FileCleanupInterceptor)
+  @CreateOfferSwagger()
   create(
-    @Body(new ZodValidationPipe(offerValidationSchema))
-    createOfferDto: CreateOfferDto,
-    @UploadedFiles()
-    files: Array<Express.Multer.File>,
+    @UploadedFiles() files: Array<Express.Multer.File>,
   ): Promise<OfferResponseDTO> {
-    return this.offerService.create(createOfferDto, files);
+    return this.offerService.create(files);
   }
 
   @Get()
+  @FindAllOffersSwagger()
   findAll() {
     return this.offerService.findAll();
   }
 
   @Get(':id')
+  @FindOneOfferSwagger()
   findOne(@Param('id') id: string) {
-    return this.offerService.findOne(+id);
+    return this.offerService.findOne(id);
   }
 
-  // @Patch(':id')
-  // update(
-  //   @Param('id') id: string,
-  //   @Body(new ZodValidationPipe(updateOfferValidationSchema))
-  //   updateOfferDto: UpdateOfferDto,
-  // ) {
-  //   return this.offerService.update(+id, updateOfferDto);
-  // }
-
   @Delete(':id')
+  @DeleteOfferSwagger()
   remove(@Param('id') id: string) {
-    return this.offerService.remove(+id);
+    return this.offerService.remove(id);
   }
 }

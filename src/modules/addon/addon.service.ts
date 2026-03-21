@@ -18,7 +18,7 @@ export class AddonService {
     const { translations, price } = dto;
 
     return this.prismaService.$transaction(async (tx) => {
-      await tx.addon.create({
+      await tx.hotelAddon.create({
         data: {
           id: addonId,
           hotel_id: hotelId,
@@ -27,12 +27,12 @@ export class AddonService {
       });
 
       for (const translation of translations) {
-        await tx.addonTranslation.create({
+        await tx.hotelAddonTranslation.create({
           data: { addon_id: addonId, ...translation },
         });
       }
 
-      return tx.addon.findUniqueOrThrow({
+      return tx.hotelAddon.findUniqueOrThrow({
         where: { id: addonId },
         include: { translations: true },
       });
@@ -40,14 +40,14 @@ export class AddonService {
   }
 
   findAll(hotelId: string) {
-    return this.prismaService.addon.findMany({
+    return this.prismaService.hotelAddon.findMany({
       where: { hotel_id: hotelId, is_deleted: false },
       include: { translations: true },
     });
   }
 
   async findOne(hotelId: string, id: string) {
-    const addon = await this.prismaService.addon.findFirst({
+    const addon = await this.prismaService.hotelAddon.findFirst({
       where: { id, hotel_id: hotelId, is_deleted: false },
       include: { translations: true },
     });
@@ -56,7 +56,7 @@ export class AddonService {
   }
 
   async update(hotelId: string, id: string, dto: UpdateAddonDto) {
-    const addon = await this.prismaService.addon.findFirst({
+    const addon = await this.prismaService.hotelAddon.findFirst({
       where: { id, hotel_id: hotelId, is_deleted: false },
     });
     if (!addon) throw new NotFoundException('الإضافة غير موجودة');
@@ -64,7 +64,7 @@ export class AddonService {
     const { translations, price } = dto;
 
     return this.prismaService.$transaction(async (tx) => {
-      await tx.addon.update({
+      await tx.hotelAddon.update({
         where: { id },
         data: {
           ...(price !== undefined && { price: price as Prisma.Decimal }),
@@ -73,7 +73,7 @@ export class AddonService {
 
       if (translations?.length) {
         for (const translation of translations) {
-          await tx.addonTranslation.upsert({
+          await tx.hotelAddonTranslation.upsert({
             where: {
               addon_id_language: {
                 addon_id: id,
@@ -89,7 +89,7 @@ export class AddonService {
         }
       }
 
-      return tx.addon.findUniqueOrThrow({
+      return tx.hotelAddon.findUniqueOrThrow({
         where: { id },
         include: { translations: true },
       });
@@ -97,12 +97,12 @@ export class AddonService {
   }
 
   async remove(hotelId: string, id: string) {
-    const addon = await this.prismaService.addon.findFirst({
+    const addon = await this.prismaService.hotelAddon.findFirst({
       where: { id, hotel_id: hotelId, is_deleted: false },
     });
     if (!addon) throw new NotFoundException('الإضافة غير موجودة');
 
-    return this.prismaService.addon.update({
+    return this.prismaService.hotelAddon.update({
       where: { id },
       data: { is_deleted: true },
     });
