@@ -8,6 +8,7 @@ import {
   Patch,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { Nationality } from 'generated/prisma/client';
 import { SecurityApprovalService } from './security-approval.service';
 import { ZodValidationPipe } from 'src/pipes/zod.validation.pipe';
 import {
@@ -15,12 +16,16 @@ import {
   updateSecurityServiceTypeSchema,
   createFlightTypeSchema,
   updateFlightTypeSchema,
+  createNationalityPricingSchema,
+  updateNationalityPricingSchema,
 } from './util/security-approval.validation';
 import type {
   CreateSecurityServiceTypeDto,
   UpdateSecurityServiceTypeDto,
   CreateFlightTypeDto,
   UpdateFlightTypeDto,
+  CreateNationalityPricingDto,
+  UpdateNationalityPricingDto,
 } from './types/security-approval.dto';
 import {
   CreateSecurityServiceTypeSwagger,
@@ -33,6 +38,13 @@ import {
   FindOneFlightTypeSwagger,
   UpdateFlightTypeSwagger,
   DeleteFlightTypeSwagger,
+  GetAllNationalitiesSwagger,
+  CreateNationalityPricingSwagger,
+  FindAllNationalityPricingSwagger,
+  FindOneNationalityPricingSwagger,
+  FindNationalityPricingByNationalitySwagger,
+  UpdateNationalityPricingSwagger,
+  DeleteNationalityPricingSwagger,
 } from './swagger/security-approval.swagger';
 
 @ApiTags('الموافقات الأمنية')
@@ -117,5 +129,58 @@ export class SecurityApprovalController {
   @DeleteFlightTypeSwagger()
   removeFlightType(@Param('id') id: string) {
     return this.service.removeFlightType(id);
+  }
+
+  // ─── Nationality Pricing ──────────────────────────────────────────────────
+
+  @Get('nationalities')
+  @GetAllNationalitiesSwagger()
+  getAllNationalities() {
+    return this.service.getAllNationalities();
+  }
+
+  @Post('nationality-pricing')
+  @CreateNationalityPricingSwagger()
+  createNationalityPricing(
+    @Body(new ZodValidationPipe(createNationalityPricingSchema))
+    dto: CreateNationalityPricingDto,
+  ) {
+    return this.service.createNationalityPricing(dto);
+  }
+
+  @Get('nationality-pricing')
+  @FindAllNationalityPricingSwagger()
+  findAllNationalityPricing() {
+    return this.service.findAllNationalityPricing();
+  }
+
+  @Get('nationality-pricing/by-nationality/:nationality')
+  @FindNationalityPricingByNationalitySwagger()
+  findNationalityPricingByNationality(
+    @Param('nationality') nationality: Nationality,
+  ) {
+    return this.service.findNationalityPricingByNationality(nationality);
+  }
+
+  @Get('nationality-pricing/:id')
+  @FindOneNationalityPricingSwagger()
+  findOneNationalityPricing(@Param('id') id: string) {
+    return this.service.findOneNationalityPricing(id);
+  }
+
+  @Patch('nationality-pricing/:id')
+  @UpdateNationalityPricingSwagger()
+  updateNationalityPricing(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(updateNationalityPricingSchema))
+    dto: UpdateNationalityPricingDto,
+  ) {
+    return this.service.updateNationalityPricing(id, dto);
+  }
+
+  @Delete('nationality-pricing/:id')
+  @DeleteNationalityPricingSwagger()
+  removeNationalityPricing(@Param('id') id: string) {
+    return this.service.removeNationalityPricing(id);
   }
 }

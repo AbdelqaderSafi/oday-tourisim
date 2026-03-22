@@ -1,10 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from 'generated/prisma/client';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
+import { Nationality, Prisma } from 'generated/prisma/client';
 import { DatabaseService } from '../database/database.service';
 import type {
   CreateFlightTypeDto,
+  CreateNationalityPricingDto,
   CreateSecurityServiceTypeDto,
   UpdateFlightTypeDto,
+  UpdateNationalityPricingDto,
   UpdateSecurityServiceTypeDto,
 } from './types/security-approval.dto';
 
@@ -172,6 +178,82 @@ export class SecurityApprovalService {
   async removeFlightType(id: string) {
     await this.findOneFlightType(id);
     return this.prisma.flightType.update({
+      where: { id },
+      data: { is_deleted: true },
+    });
+  }
+
+  // ─── Nationality Pricing ──────────────────────────────────────────────────
+
+  getAllNationalities() {
+    return Object.values(Nationality);
+  }
+
+  async createNationalityPricing(dto: CreateNationalityPricingDto) {
+    const existing = await this.prisma.nationalityPricing.findFirst({
+      where: { nationality: dto.nationality, is_deleted: false },
+    });
+    if (existing) {
+      throw new ConflictException('تسعيرة هذه الجنسية موجودة مسبقاً');
+    }
+
+    return this.prisma.nationalityPricing.create({
+      data: {
+        nationality: dto.nationality,
+        price_24h: dto.price_24h as Prisma.Decimal,
+        price_72h: dto.price_72h as Prisma.Decimal,
+      },
+    });
+  }
+
+  findAllNationalityPricing() {
+    return this.prisma.nationalityPricing.findMany({
+      where: { is_deleted: false },
+      orderBy: { created_at: 'desc' },
+    });
+  }
+
+  async findOneNationalityPricing(id: string) {
+    const record = await this.prisma.nationalityPricing.findFirst({
+      where: { id, is_deleted: false },
+    });
+    if (!record) throw new NotFoundException('تسعيرة الجنسية غير موجودة');
+    return record;
+  }
+
+  async findNationalityPricingByNationality(nationality: Nationality) {
+    const record = await this.prisma.nationalityPricing.findFirst({
+      where: { nationality, is_deleted: false },
+    });
+    if (!record) throw new NotFoundException('لا توجد تسعيرة لهذه الجنسية');
+    return record;
+  }
+
+  async updateNationalityPricing(
+    id: string,
+    dto: UpdateNationalityPricingDto,
+  ) {
+    await this.findOneNationalityPricing(id);
+
+    return this.prisma.nationalityPricing.update({
+      where: { id },
+      data: {
+        ...(dto.nationality !== undefined && {
+          nationality: dto.nationality,
+        }),
+        ...(dto.price_24h !== undefined && {
+          price_24h: dto.price_24h as Prisma.Decimal,
+        }),
+        ...(dto.price_72h !== undefined && {
+          price_72h: dto.price_72h as Prisma.Decimal,
+        }),
+      },
+    });
+  }
+
+  async removeNationalityPricing(id: string) {
+    await this.findOneNationalityPricing(id);
+    return this.prisma.nationalityPricing.update({
       where: { id },
       data: { is_deleted: true },
     });

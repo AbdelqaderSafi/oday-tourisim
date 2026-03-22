@@ -1,4 +1,4 @@
-import { LanguageEnum, Prisma } from 'generated/prisma/client';
+import { LanguageEnum, Nationality, Prisma } from 'generated/prisma/client';
 
 // ─── Security Service Types ───────────────────────────────────────────────────
 
@@ -38,3 +38,17 @@ export type UpdateFlightTypeDto = Partial<CreateFlightTypeDto>;
 export type FlightTypeResponseDTO = Prisma.FlightTypeGetPayload<{
   include: { translations: true };
 }>;
+
+// ─── Nationality Pricing ──────────────────────────────────────────────────────
+
+export type CreateNationalityPricingDto = {
+  nationality: Nationality;
+  price_24h: Prisma.Decimal;
+  price_72h: Prisma.Decimal;
+};
+
+export type UpdateNationalityPricingDto =
+  Partial<CreateNationalityPricingDto>;
+
+export type NationalityPricingResponseDTO =
+  Prisma.NationalityPricingGetPayload<{}>;
