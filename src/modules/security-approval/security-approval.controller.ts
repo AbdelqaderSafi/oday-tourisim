@@ -8,22 +8,22 @@ import {
   Patch,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { Nationality } from 'generated/prisma/client';
+import { Airline, Nationality } from 'generated/prisma/client';
 import { SecurityApprovalService } from './security-approval.service';
 import { ZodValidationPipe } from 'src/pipes/zod.validation.pipe';
 import {
   createSecurityServiceTypeSchema,
   updateSecurityServiceTypeSchema,
-  createFlightTypeSchema,
-  updateFlightTypeSchema,
+  createAirlinePricingSchema,
+  updateAirlinePricingSchema,
   createNationalityPricingSchema,
   updateNationalityPricingSchema,
 } from './util/security-approval.validation';
 import type {
   CreateSecurityServiceTypeDto,
   UpdateSecurityServiceTypeDto,
-  CreateFlightTypeDto,
-  UpdateFlightTypeDto,
+  CreateAirlinePricingDto,
+  UpdateAirlinePricingDto,
   CreateNationalityPricingDto,
   UpdateNationalityPricingDto,
 } from './types/security-approval.dto';
@@ -33,11 +33,13 @@ import {
   FindOneSecurityServiceTypeSwagger,
   UpdateSecurityServiceTypeSwagger,
   DeleteSecurityServiceTypeSwagger,
-  CreateFlightTypeSwagger,
-  FindAllFlightTypesSwagger,
-  FindOneFlightTypeSwagger,
-  UpdateFlightTypeSwagger,
-  DeleteFlightTypeSwagger,
+  GetAllAirlinesSwagger,
+  CreateAirlinePricingSwagger,
+  FindAllAirlinePricingSwagger,
+  FindOneAirlinePricingSwagger,
+  FindAirlinePricingByAirlineSwagger,
+  UpdateAirlinePricingSwagger,
+  DeleteAirlinePricingSwagger,
   GetAllNationalitiesSwagger,
   CreateNationalityPricingSwagger,
   FindAllNationalityPricingSwagger,
@@ -92,43 +94,55 @@ export class SecurityApprovalController {
     return this.service.removeServiceType(id);
   }
 
-  // ─── Flight Types ─────────────────────────────────────────────────────────
+  // ─── Airline Pricing ─────────────────────────────────────────────────────
 
-  @Post('flight-type')
-  @CreateFlightTypeSwagger()
-  createFlightType(
-    @Body(new ZodValidationPipe(createFlightTypeSchema))
-    dto: CreateFlightTypeDto,
+  @Get('airlines')
+  @GetAllAirlinesSwagger()
+  getAllAirlines() {
+    return this.service.getAllAirlines();
+  }
+
+  @Post('airline-pricing')
+  @CreateAirlinePricingSwagger()
+  createAirlinePricing(
+    @Body(new ZodValidationPipe(createAirlinePricingSchema))
+    dto: CreateAirlinePricingDto,
   ) {
-    return this.service.createFlightType(dto);
+    return this.service.createAirlinePricing(dto);
   }
 
-  @Get('flight-type')
-  @FindAllFlightTypesSwagger()
-  findAllFlightTypes() {
-    return this.service.findAllFlightTypes();
+  @Get('airline-pricing')
+  @FindAllAirlinePricingSwagger()
+  findAllAirlinePricing() {
+    return this.service.findAllAirlinePricing();
   }
 
-  @Get('flight-type/:id')
-  @FindOneFlightTypeSwagger()
-  findOneFlightType(@Param('id') id: string) {
-    return this.service.findOneFlightType(id);
+  @Get('airline-pricing/by-airline/:airline')
+  @FindAirlinePricingByAirlineSwagger()
+  findAirlinePricingByAirline(@Param('airline') airline: Airline) {
+    return this.service.findAirlinePricingByAirline(airline);
   }
 
-  @Patch('flight-type/:id')
-  @UpdateFlightTypeSwagger()
-  updateFlightType(
+  @Get('airline-pricing/:id')
+  @FindOneAirlinePricingSwagger()
+  findOneAirlinePricing(@Param('id') id: string) {
+    return this.service.findOneAirlinePricing(id);
+  }
+
+  @Patch('airline-pricing/:id')
+  @UpdateAirlinePricingSwagger()
+  updateAirlinePricing(
     @Param('id') id: string,
-    @Body(new ZodValidationPipe(updateFlightTypeSchema))
-    dto: UpdateFlightTypeDto,
+    @Body(new ZodValidationPipe(updateAirlinePricingSchema))
+    dto: UpdateAirlinePricingDto,
   ) {
-    return this.service.updateFlightType(id, dto);
+    return this.service.updateAirlinePricing(id, dto);
   }
 
-  @Delete('flight-type/:id')
-  @DeleteFlightTypeSwagger()
-  removeFlightType(@Param('id') id: string) {
-    return this.service.removeFlightType(id);
+  @Delete('airline-pricing/:id')
+  @DeleteAirlinePricingSwagger()
+  removeAirlinePricing(@Param('id') id: string) {
+    return this.service.removeAirlinePricing(id);
   }
 
   // ─── Nationality Pricing ──────────────────────────────────────────────────

@@ -25,14 +25,10 @@ const serviceTypeTranslationItem = {
   },
 };
 
-const flightTypeTranslationItem = {
-  type: 'object',
-  required: ['language', 'name'],
-  properties: {
-    language: { type: 'string', enum: ['ar', 'en'], example: 'ar' },
-    name: { type: 'string', example: 'درجة سياحية' },
-  },
-};
+const airlineEnumValues = [
+  'QATAR_AIRWAYS', 'EMIRATES', 'AEGEAN',
+  'TURKISH_AIRLINES', 'OMAN_AIR', 'OTHER',
+];
 
 // ─── Security Service Types ───────────────────────────────────────────────────
 
@@ -102,69 +98,85 @@ export const DeleteSecurityServiceTypeSwagger = () =>
     ApiResponse({ status: 404, description: 'نوع الخدمة غير موجود' }),
   );
 
-// ─── Flight Types ─────────────────────────────────────────────────────────────
+// ─── Airline Pricing ──────────────────────────────────────────────────────────
 
-export const CreateFlightTypeSwagger = () =>
+export const GetAllAirlinesSwagger = () =>
   applyDecorators(
-    ApiOperation({ summary: 'إضافة نوع طيران جديد' }),
+    ApiOperation({ summary: 'جلب قائمة جميع شركات الطيران المتاحة' }),
+    ApiResponse({ status: 200, description: 'قائمة شركات الطيران' }),
+  );
+
+export const CreateAirlinePricingSwagger = () =>
+  applyDecorators(
+    ApiOperation({ summary: 'إضافة تسعيرة لشركة طيران' }),
     ApiBody({
       schema: {
         type: 'object',
-        required: ['price', 'translations'],
+        required: ['airline', 'price'],
         properties: {
-          price: { type: 'number', example: 500, minimum: 0 },
-          translations: {
-            type: 'array',
-            items: flightTypeTranslationItem,
-            example: translationExample('درجة سياحية', 'Economy Class'),
+          airline: {
+            type: 'string',
+            enum: airlineEnumValues,
+            example: 'EMIRATES',
           },
+          price: { type: 'number', example: 100, minimum: 0 },
         },
       },
     }),
-    ApiResponse({ status: 201, description: 'تم إنشاء نوع الطيران بنجاح' }),
+    ApiResponse({ status: 201, description: 'تم إنشاء التسعيرة بنجاح' }),
     ApiResponse({ status: 400, description: 'بيانات غير صحيحة' }),
+    ApiResponse({ status: 409, description: 'تسعيرة شركة الطيران هذه موجودة مسبقاً' }),
   );
 
-export const FindAllFlightTypesSwagger = () =>
+export const FindAllAirlinePricingSwagger = () =>
   applyDecorators(
-    ApiOperation({ summary: 'جلب جميع أنواع الطيران' }),
-    ApiResponse({ status: 200, description: 'قائمة أنواع الطيران مع الترجمات' }),
+    ApiOperation({ summary: 'جلب جميع تسعيرات شركات الطيران' }),
+    ApiResponse({ status: 200, description: 'قائمة تسعيرات شركات الطيران' }),
   );
 
-export const FindOneFlightTypeSwagger = () =>
+export const FindOneAirlinePricingSwagger = () =>
   applyDecorators(
-    ApiOperation({ summary: 'جلب نوع طيران بالـ ID' }),
-    ApiParam({ name: 'id', description: 'معرّف نوع الطيران (UUID)' }),
-    ApiResponse({ status: 200, description: 'بيانات نوع الطيران مع الترجمات' }),
-    ApiResponse({ status: 404, description: 'نوع الطيران غير موجود' }),
+    ApiOperation({ summary: 'جلب تسعيرة شركة طيران بالـ ID' }),
+    ApiParam({ name: 'id', description: 'معرّف التسعيرة (UUID)' }),
+    ApiResponse({ status: 200, description: 'بيانات تسعيرة شركة الطيران' }),
+    ApiResponse({ status: 404, description: 'التسعيرة غير موجودة' }),
   );
 
-export const UpdateFlightTypeSwagger = () =>
+export const FindAirlinePricingByAirlineSwagger = () =>
   applyDecorators(
-    ApiOperation({ summary: 'تعديل نوع طيران' }),
-    ApiParam({ name: 'id', description: 'معرّف نوع الطيران (UUID)' }),
+    ApiOperation({ summary: 'جلب تسعيرة حسب شركة الطيران' }),
+    ApiParam({
+      name: 'airline',
+      description: 'اسم شركة الطيران (مثال: EMIRATES)',
+      enum: airlineEnumValues,
+    }),
+    ApiResponse({ status: 200, description: 'بيانات تسعيرة شركة الطيران' }),
+    ApiResponse({ status: 404, description: 'لا توجد تسعيرة لشركة الطيران هذه' }),
+  );
+
+export const UpdateAirlinePricingSwagger = () =>
+  applyDecorators(
+    ApiOperation({ summary: 'تعديل تسعيرة شركة طيران' }),
+    ApiParam({ name: 'id', description: 'معرّف التسعيرة (UUID)' }),
     ApiBody({
       schema: {
         type: 'object',
         properties: {
-          price: { type: 'number', example: 800, minimum: 0 },
-          translations: {
-            type: 'array',
-            items: flightTypeTranslationItem,
-          },
+          airline: { type: 'string', enum: airlineEnumValues },
+          price: { type: 'number', example: 150, minimum: 0 },
         },
       },
     }),
     ApiResponse({ status: 200, description: 'تم التعديل بنجاح' }),
-    ApiResponse({ status: 404, description: 'نوع الطيران غير موجود' }),
+    ApiResponse({ status: 404, description: 'التسعيرة غير موجودة' }),
   );
 
-export const DeleteFlightTypeSwagger = () =>
+export const DeleteAirlinePricingSwagger = () =>
   applyDecorators(
-    ApiOperation({ summary: 'حذف نوع طيران' }),
-    ApiParam({ name: 'id', description: 'معرّف نوع الطيران (UUID)' }),
+    ApiOperation({ summary: 'حذف تسعيرة شركة طيران' }),
+    ApiParam({ name: 'id', description: 'معرّف التسعيرة (UUID)' }),
     ApiResponse({ status: 200, description: 'تم الحذف بنجاح' }),
-    ApiResponse({ status: 404, description: 'نوع الطيران غير موجود' }),
+    ApiResponse({ status: 404, description: 'التسعيرة غير موجودة' }),
   );
 
 // ─── Nationality Pricing ──────────────────────────────────────────────────────

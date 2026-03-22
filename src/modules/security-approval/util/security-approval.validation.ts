@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Nationality, Prisma } from 'generated/prisma/client';
+import { Airline, Nationality, Prisma } from 'generated/prisma/client';
 
 const priceSchema = z.coerce
   .number()
@@ -12,11 +12,6 @@ const serviceTypeTranslationSchema = z.object({
   description: z.string().min(2),
 });
 
-const flightTypeTranslationSchema = z.object({
-  language: z.enum(['ar', 'en']),
-  name: z.string().min(2).max(255),
-});
-
 export const createSecurityServiceTypeSchema = z.object({
   price: priceSchema,
   translations: z.array(serviceTypeTranslationSchema).min(1).max(2),
@@ -27,14 +22,18 @@ export const updateSecurityServiceTypeSchema = z.object({
   translations: z.array(serviceTypeTranslationSchema).min(1).max(2).optional(),
 });
 
-export const createFlightTypeSchema = z.object({
+// ─── Airline Pricing ──────────────────────────────────────────────────────────
+
+const airlineValues = Object.values(Airline) as [string, ...string[]];
+
+export const createAirlinePricingSchema = z.object({
+  airline: z.enum(airlineValues),
   price: priceSchema,
-  translations: z.array(flightTypeTranslationSchema).min(1).max(2),
 });
 
-export const updateFlightTypeSchema = z.object({
+export const updateAirlinePricingSchema = z.object({
+  airline: z.enum(airlineValues).optional(),
   price: priceSchema.optional(),
-  translations: z.array(flightTypeTranslationSchema).min(1).max(2).optional(),
 });
 
 // ─── Nationality Pricing ──────────────────────────────────────────────────────

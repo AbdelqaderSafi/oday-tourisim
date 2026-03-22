@@ -3,13 +3,13 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
-import { Nationality, Prisma } from 'generated/prisma/client';
+import { Airline, Nationality, Prisma } from 'generated/prisma/client';
 import { DatabaseService } from '../database/database.service';
 import type {
-  CreateFlightTypeDto,
+  CreateAirlinePricingDto,
   CreateNationalityPricingDto,
   CreateSecurityServiceTypeDto,
-  UpdateFlightTypeDto,
+  UpdateAirlinePricingDto,
   UpdateNationalityPricingDto,
   UpdateSecurityServiceTypeDto,
 } from './types/security-approval.dto';
@@ -102,82 +102,69 @@ export class SecurityApprovalService {
     });
   }
 
-  // ─── Flight Types ─────────────────────────────────────────────────────────
+  // ─── Airline Pricing ─────────────────────────────────────────────────────
 
-  async createFlightType(dto: CreateFlightTypeDto) {
-    return this.prisma.$transaction(async (tx) => {
-      const record = await tx.flightType.create({
-        data: { price: dto.price as Prisma.Decimal },
-      });
+  getAllAirlines() {
+    return Object.values(Airline);
+  }
 
-      for (const translation of dto.translations) {
-        await tx.flightTypeTranslation.create({
-          data: { flight_type_id: record.id, ...translation },
-        });
-      }
+  async createAirlinePricing(dto: CreateAirlinePricingDto) {
+    const existing = await this.prisma.airlinePricing.findFirst({
+      where: { airline: dto.airline, is_deleted: false },
+    });
+    if (existing) {
+      throw new ConflictException('تسعيرة شركة الطيران هذه موجودة مسبقاً');
+    }
 
-      return tx.flightType.findUniqueOrThrow({
-        where: { id: record.id },
-        include: { translations: true },
-      });
+    return this.prisma.airlinePricing.create({
+      data: {
+        airline: dto.airline,
+        price: dto.price as Prisma.Decimal,
+      },
     });
   }
 
-  findAllFlightTypes() {
-    return this.prisma.flightType.findMany({
+  findAllAirlinePricing() {
+    return this.prisma.airlinePricing.findMany({
       where: { is_deleted: false },
-      include: { translations: true },
       orderBy: { created_at: 'desc' },
     });
   }
 
-  async findOneFlightType(id: string) {
-    const record = await this.prisma.flightType.findFirst({
+  async findOneAirlinePricing(id: string) {
+    const record = await this.prisma.airlinePricing.findFirst({
       where: { id, is_deleted: false },
-      include: { translations: true },
     });
-    if (!record) throw new NotFoundException('نوع الطيران غير موجود');
+    if (!record) throw new NotFoundException('تسعيرة شركة الطيران غير موجودة');
     return record;
   }
 
-  async updateFlightType(id: string, dto: UpdateFlightTypeDto) {
-    await this.findOneFlightType(id);
+  async findAirlinePricingByAirline(airline: Airline) {
+    const record = await this.prisma.airlinePricing.findFirst({
+      where: { airline, is_deleted: false },
+    });
+    if (!record)
+      throw new NotFoundException('لا توجد تسعيرة لشركة الطيران هذه');
+    return record;
+  }
 
-    return this.prisma.$transaction(async (tx) => {
-      await tx.flightType.update({
-        where: { id },
-        data: {
-          ...(dto.price !== undefined && {
-            price: dto.price as Prisma.Decimal,
-          }),
-        },
-      });
+  async updateAirlinePricing(id: string, dto: UpdateAirlinePricingDto) {
+    await this.findOneAirlinePricing(id);
 
-      if (dto.translations?.length) {
-        for (const translation of dto.translations) {
-          await tx.flightTypeTranslation.upsert({
-            where: {
-              flight_type_id_language: {
-                flight_type_id: id,
-                language: translation.language,
-              },
-            },
-            update: { name: translation.name },
-            create: { flight_type_id: id, ...translation },
-          });
-        }
-      }
-
-      return tx.flightType.findUniqueOrThrow({
-        where: { id },
-        include: { translations: true },
-      });
+    return this.prisma.airlinePricing.update({
+      where: { id },
+      data: {
+        ...(dto.airline !== undefined && { airline: dto.airline }),
+        ...(dto.price !== undefined && {
+          price: dto.price as Prisma.Decimal,
+        }),
+      },
     });
   }
 
-  async removeFlightType(id: string) {
-    await this.findOneFlightType(id);
-    return this.prisma.flightType.update({
+  async removeAirlinePricing(id: string) {
+    await this.findOneAirlinePricing(id);
+    return this.prisma.airlinePricing.update({
       where: { id },
       data: { is_deleted: true },
     });

@@ -1,4 +1,9 @@
-import { LanguageEnum, Nationality, Prisma } from 'generated/prisma/client';
+import {
+  Airline,
+  LanguageEnum,
+  Nationality,
+  Prisma,
+} from 'generated/prisma/client';
 
 // ─── Security Service Types ───────────────────────────────────────────────────
 
@@ -21,23 +26,17 @@ export type SecurityServiceTypeResponseDTO =
     include: { translations: true };
   }>;
 
-// ─── Flight Types ─────────────────────────────────────────────────────────────
+// ─── Airline Pricing ──────────────────────────────────────────────────────────
 
-export type FlightTypeTranslationInput = {
-  language: LanguageEnum;
-  name: string;
-};
-
-export type CreateFlightTypeDto = {
+export type CreateAirlinePricingDto = {
+  airline: Airline;
   price: Prisma.Decimal;
-  translations: FlightTypeTranslationInput[];
 };
 
-export type UpdateFlightTypeDto = Partial<CreateFlightTypeDto>;
+export type UpdateAirlinePricingDto = Partial<CreateAirlinePricingDto>;
 
-export type FlightTypeResponseDTO = Prisma.FlightTypeGetPayload<{
-  include: { translations: true };
-}>;
+export type AirlinePricingResponseDTO =
+  Prisma.AirlinePricingGetPayload<{}>;
 
 // ─── Nationality Pricing ──────────────────────────────────────────────────────
 

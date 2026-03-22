@@ -343,30 +343,16 @@ model NationalityPricing {
   @@map("nationality_pricing")
 }
 
-model FlightType {
-  id           String   @id @default(uuid()) @db.VarChar(36)
-  price        Decimal  @db.Decimal(10, 2)
+model AirlinePricing {
+  id         String  @id @default(uuid()) @db.VarChar(36)
+  airline    Airline @unique
+  price      Decimal @db.Decimal(10, 2)
 
-  translations FlightTypeTranslation[]
+  is_deleted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  is_deleted   Boolean  @default(false)
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
-
-  @@map("flight_types")
-}
-
-model FlightTypeTranslation {
-  id             String      @id @default(uuid()) @db.VarChar(36)
-  flight_type_id String      @db.VarChar(36)
-  language       LanguageEnum
-
-  name           String      @db.VarChar(255)
-
-  flight_type    FlightType  @relation(fields: [flight_type_id], references: [id], onDelete: Cascade)
-
-  @@unique([flight_type_id, language])
-  @@map("flight_type_translations")
+  @@map("airline_pricing")
 }
 
 model Asset {
@@ -484,4 +470,13 @@ enum Nationality {
   SUDANESE
   SAINT_KITTS_AND_NEVIS
   DOMINICA
+}
+
+enum Airline {
+  QATAR_AIRWAYS
+  EMIRATES
+  AEGEAN
+  TURKISH_AIRLINES
+  OMAN_AIR
+  OTHER
 }
