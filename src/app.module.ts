@@ -11,6 +11,8 @@ import { AddonModule } from './modules/addon/addon.module';
 import { TripModule } from './modules/trip/trip.module';
 import { SecurityApprovalModule } from './modules/security-approval/security-approval.module';
 import { PhotoGalleryModule } from './modules/photo-gallery/photo-gallery.module';
+import { CommentModule } from './modules/comment/comment.module';
+import { QuestionModule } from './modules/question/question.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { PhotoGalleryModule } from './modules/photo-gallery/photo-gallery.module
     TripModule,
     SecurityApprovalModule,
     PhotoGalleryModule,
+    CommentModule,
+    QuestionModule,
   ],
   controllers: [],
   providers: [],

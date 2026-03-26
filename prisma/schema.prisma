@@ -56,11 +56,32 @@ model comments {
   client_name String         @db.VarChar(255)
   stars       comments_stars
   comment     String         @db.Text
-  trip_name   String?        @db.VarChar(255)
-  is_hidden   Boolean        @default(false)
+  trip_name   String        @db.VarChar(255)
+  city        String        @db.VarChar(255)
   created_at  DateTime       @default(now())
   updated_at  DateTime       @updatedAt
   is_deleted  Boolean        @default(false)
+}
+
+model questions {
+  id          String                   @id @default(uuid()) @db.VarChar(36)
+  created_at  DateTime                 @default(now())
+  updated_at  DateTime                 @updatedAt
+  is_deleted  Boolean                  @default(false)
+
+  translations questions_translations[]
+}
+
+model questions_translations {
+  id          String       @id @default(uuid()) @db.VarChar(36)
+  question_id String       @db.VarChar(36)
+  language    LanguageEnum
+  question    String       @db.Text
+  answer      String       @db.Text
+
+  questionRef questions    @relation(fields: [question_id], references: [id], onDelete: Cascade)
+
+  @@unique([question_id, language])
 }
 
 model gallery {
