@@ -209,23 +209,36 @@ export class HotelService {
       if (translations?.length) {
         for (const translation of translations) {
           const { Facilities, ...translationRest } = translation;
-          await tx.hotelTranslation.upsert({
+          const existing = await tx.hotelTranslation.findUnique({
             where: {
               hotel_id_language: {
                 hotel_id: id,
                 language: translation.language,
               },
             },
-            update: {
-              ...translationRest,
-              Facilities: Facilities as Prisma.InputJsonValue,
-            },
-            create: {
-              hotel_id: id,
-              ...translationRest,
-              Facilities: Facilities as Prisma.InputJsonValue,
-            },
           });
+          if (existing) {
+            await tx.hotelTranslation.update({
+              where: {
+                hotel_id_language: {
+                  hotel_id: id,
+                  language: translation.language,
+                },
+              },
+              data: {
+                ...translationRest,
+                Facilities: Facilities as Prisma.InputJsonValue,
+              },
+            });
+          } else {
+            await tx.hotelTranslation.create({
+              data: {
+                hotel_id: id,
+                ...translationRest,
+                Facilities: Facilities as Prisma.InputJsonValue,
+              },
+            });
+          }
         }
       }
 
