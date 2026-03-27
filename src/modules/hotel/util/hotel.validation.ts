@@ -91,7 +91,7 @@ export const hotelValidationSchema = z.object({
     .min(0)
     .transform((val) => new Prisma.Decimal(val))
     .optional(),
-  youtube_video_url: z.string().url().optional(),
+  youtube_video_url: z.union([z.string().url(), z.literal('')]).optional(),
   translations: translationsField,
   rooms: roomsField,
   addons: addonsField,
@@ -134,7 +134,7 @@ export const updateHotelValidationSchema = z.object({
     .min(0)
     .transform((val) => new Prisma.Decimal(val))
     .optional(),
-  youtube_video_url: z.string().url().optional(),
+  youtube_video_url: z.union([z.string().url(), z.literal('')]).optional(),
   translations: translationsField.optional(),
   rooms: roomsField,
   addons: addonsField,
