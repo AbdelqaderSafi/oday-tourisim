@@ -243,6 +243,16 @@ export class HotelService {
       }
 
       if (rooms?.length) {
+        const existingRooms = await tx.room.findMany({
+          where: { hotel_id: id },
+          select: { id: true },
+        });
+        if (existingRooms.length) {
+          await tx.roomTranslation.deleteMany({
+            where: { room_id: { in: existingRooms.map((r) => r.id) } },
+          });
+          await tx.room.deleteMany({ where: { hotel_id: id } });
+        }
         for (const room of rooms) {
           const roomId = randomUUID();
           const { translations: roomTranslations, price, ...roomRest } = room;
@@ -263,6 +273,16 @@ export class HotelService {
       }
 
       if (addons?.length) {
+        const existingAddons = await tx.hotelAddon.findMany({
+          where: { hotel_id: id },
+          select: { id: true },
+        });
+        if (existingAddons.length) {
+          await tx.hotelAddonTranslation.deleteMany({
+            where: { addon_id: { in: existingAddons.map((a) => a.id) } },
+          });
+          await tx.hotelAddon.deleteMany({ where: { hotel_id: id } });
+        }
         for (const addon of addons) {
           const addonId = randomUUID();
           const { translations: addonTranslations, price } = addon;
