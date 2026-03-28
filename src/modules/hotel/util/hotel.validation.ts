@@ -109,16 +109,27 @@ const uuidLike = z
 
 export const updateHotelValidationSchema = z.object({
   destination: z
-    .enum(['SHARM_EL_SHEIKH', 'EL_GHARDQA', 'EL_AIN_SOKHNA', 'DAHAB'])
+    .union([
+      z.enum(['SHARM_EL_SHEIKH', 'EL_GHARDQA', 'EL_AIN_SOKHNA', 'DAHAB']),
+      z.literal('').transform(() => undefined),
+    ])
     .optional(),
   initial_price: z.coerce
     .number()
     .min(0)
     .transform((val) => new Prisma.Decimal(val))
     .optional(),
-  stars: z.enum(['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE']).optional(),
+  stars: z
+    .union([
+      z.enum(['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE']),
+      z.literal('').transform(() => undefined),
+    ])
+    .optional(),
   rating: z
-    .enum(['UNRATED', 'MOST_BOOKED', 'TOP_RATED', 'LOWEST_PRICE'])
+    .union([
+      z.enum(['UNRATED', 'MOST_BOOKED', 'TOP_RATED', 'LOWEST_PRICE']),
+      z.literal('').transform(() => undefined),
+    ])
     .optional(),
   is_discounted: z
     .union([z.boolean(), z.string().transform((val) => val === 'true')])
