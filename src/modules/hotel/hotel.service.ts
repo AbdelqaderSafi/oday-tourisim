@@ -32,12 +32,13 @@ export class HotelService {
     }
 
     const hotelId = randomUUID();
-    const { translations, rooms, addons, ...rest } = createHotelDto;
+    const { translations, rooms, addons, slug, ...rest } = createHotelDto;
 
     return this.prismaService.$transaction(async (tx) => {
       await tx.hotels.create({
         data: {
           id: hotelId,
+          slug,
           ...rest,
         },
       });

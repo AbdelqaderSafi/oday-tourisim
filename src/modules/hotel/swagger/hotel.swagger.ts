@@ -20,6 +20,7 @@ export const CreateHotelSwagger = () =>
       schema: {
         type: 'object',
         required: [
+          'slug',
           'destination',
           'initial_price',
           'stars',
@@ -28,6 +29,11 @@ export const CreateHotelSwagger = () =>
           'mainImages',
         ],
         properties: {
+          slug: {
+            type: 'string',
+            example: 'al-nakheel-hotel',
+            description: 'الـ slug الفريد للفندق',
+          },
           destination: {
             type: 'string',
             enum: ['SHARM_EL_SHEIKH', 'EL_GHARDQA', 'EL_AIN_SOKHNA', 'DAHAB'],
@@ -70,9 +76,9 @@ export const CreateHotelSwagger = () =>
           translations: {
             type: 'string',
             example:
-              '[{"language":"ar","name":"فندق النخيل","slug":"hotel-nakheel","description":"فندق فاخر في قلب المدينة","Facilities":["مسبح","واي فاي مجاني","سبا"]},{"language":"en","name":"Al Nakheel Hotel","slug":"al-nakheel-hotel","description":"A luxury hotel in the heart of the city","Facilities":["Pool","Free WiFi","Spa"]}]',
+              '[{"language":"ar","name":"فندق النخيل","description":"فندق فاخر في قلب المدينة","Facilities":["مسبح","واي فاي مجاني","سبا"]},{"language":"en","name":"Al Nakheel Hotel","description":"A luxury hotel in the heart of the city","Facilities":["Pool","Free WiFi","Spa"]}]',
             description:
-              'JSON string - مصفوفة الترجمات (عربي وإنجليزي). كل ترجمة تحتوي: language, name, slug, description, Facilities',
+              'JSON string - مصفوفة الترجمات (عربي وإنجليزي). كل ترجمة تحتوي: language, name, description, Facilities',
           },
           mainImages: {
             type: 'array',
@@ -162,6 +168,7 @@ export const FindOneHotelSwagger = () =>
       schema: {
         example: {
           id: 'bf176f2b-d79a-4b70-a8dd-e9f86f191371',
+          slug: 'al-nakheel-hotel',
           destination: 'SHARM_EL_SHEIKH',
           initial_price: '250.00',
           stars: 'FIVE',
@@ -179,7 +186,6 @@ export const FindOneHotelSwagger = () =>
               hotel_id: 'bf176f2b-d79a-4b70-a8dd-e9f86f191371',
               language: 'ar',
               name: 'فندق النخيل',
-              slug: 'hotel-nakheel',
               description: 'فندق فاخر في قلب المدينة',
               Facilities: ['مسبح', 'واي فاي مجاني'],
             },
@@ -188,7 +194,6 @@ export const FindOneHotelSwagger = () =>
               hotel_id: 'bf176f2b-d79a-4b70-a8dd-e9f86f191371',
               language: 'en',
               name: 'Al Nakheel Hotel',
-              slug: 'al-nakheel-hotel',
               description: 'A luxury hotel in the heart of the city',
               Facilities: ['Pool', 'Free WiFi'],
             },
@@ -269,6 +274,11 @@ export const UpdateHotelSwagger = () =>
       schema: {
         type: 'object',
         properties: {
+          slug: {
+            type: 'string',
+            example: 'al-nakheel-hotel-updated',
+            description: 'الـ slug الفريد للفندق (اختياري)',
+          },
           destination: {
             type: 'string',
             enum: ['SHARM_EL_SHEIKH', 'EL_GHARDQA', 'EL_AIN_SOKHNA', 'DAHAB'],
@@ -291,9 +301,9 @@ export const UpdateHotelSwagger = () =>
           translations: {
             type: 'string',
             example:
-              '[{"language":"ar","name":"فندق النخيل المحدث","slug":"hotel-nakheel-updated","description":"وصف محدث","Facilities":["مسبح","سبا"]}]',
+              '[{"language":"ar","name":"فندق النخيل المحدث","description":"وصف محدث","Facilities":["مسبح","سبا"]}]',
             description:
-              'JSON string - الترجمات المراد تحديثها (upsert). كل ترجمة تحتوي: language, name, slug, description, Facilities',
+              'JSON string - الترجمات المراد تحديثها (upsert). كل ترجمة تحتوي: language, name, description, Facilities',
           },
           rooms: {
             type: 'string',

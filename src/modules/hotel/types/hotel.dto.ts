@@ -9,7 +9,6 @@ import {
 export type TranslationInput = {
   language: LanguageEnum;
   name: string;
-  slug: string;
   description: string;
   Facilities: Prisma.JsonValue;
 };
@@ -26,6 +25,7 @@ export type AddonInput = {
 };
 
 export type CreateHotelDto = {
+  slug: string;
   destination: DestinatiosnEnum;
   initial_price: Prisma.Decimal;
   stars: hotels_stars;

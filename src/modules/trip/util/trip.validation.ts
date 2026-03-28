@@ -7,7 +7,6 @@ const tripTranslationSchema = z.object({
   language: z.enum(['ar', 'en']),
   title: z.string().min(2).max(255),
   subtitle: z.string().min(2).max(255),
-  slug: z.string().min(2).max(255),
   description: z.string().min(2),
   duration: z.string().min(1).max(255),
   facilities: z.array(z.string().min(1).max(255)),
@@ -66,6 +65,7 @@ const addonsField = z
   .optional();
 
 export const tripValidationSchema = z.object({
+  slug: z.string().min(2).max(255),
   price: z.coerce
     .number()
     .min(0)
@@ -88,6 +88,7 @@ const uuidLike = z
   );
 
 export const updateTripValidationSchema = z.object({
+  slug: z.string().min(2).max(255).optional(),
   price: z.coerce
     .number()
     .min(0)

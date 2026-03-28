@@ -20,6 +20,7 @@ export const CreateTripSwagger = () =>
       schema: {
         type: 'object',
         required: [
+          'slug',
           'price',
           'start_time',
           'end_time',
@@ -27,6 +28,11 @@ export const CreateTripSwagger = () =>
           'mainImages',
         ],
         properties: {
+          slug: {
+            type: 'string',
+            example: 'cairo-historical-trip',
+            description: 'الـ slug الفريد للرحلة',
+          },
           price: { type: 'number', example: 350, minimum: 0 },
           start_time: {
             type: 'string',
@@ -41,9 +47,9 @@ export const CreateTripSwagger = () =>
           translations: {
             type: 'string',
             example:
-              '[{"language":"ar","title":"رحلة القاهرة التاريخية","subtitle":"استكشف الأهرامات","slug":"cairo-historical-trip","description":"رحلة مميزة لاستكشاف معالم القاهرة التاريخية","duration":"3 أيام / 2 ليالي","facilities":["نقل مكيف","دليل سياحي","غداء"]},{"language":"en","title":"Cairo Historical Trip","subtitle":"Explore the Pyramids","slug":"cairo-historical-trip-en","description":"Amazing trip to explore Cairo\'s historical landmarks","duration":"3 Days / 2 Nights","facilities":["Air-conditioned transport","Tour guide","Lunch"]}]',
+              '[{"language":"ar","title":"رحلة القاهرة التاريخية","subtitle":"استكشف الأهرامات","description":"رحلة مميزة لاستكشاف معالم القاهرة التاريخية","duration":"3 أيام / 2 ليالي","facilities":["نقل مكيف","دليل سياحي","غداء"]},{"language":"en","title":"Cairo Historical Trip","subtitle":"Explore the Pyramids","description":"Amazing trip to explore Cairo\'s historical landmarks","duration":"3 Days / 2 Nights","facilities":["Air-conditioned transport","Tour guide","Lunch"]}]',
             description:
-              'JSON string - مصفوفة الترجمات (عربي وإنجليزي). كل ترجمة تحتوي: language, title, subtitle, slug, description, duration, facilities',
+              'JSON string - مصفوفة الترجمات (عربي وإنجليزي). كل ترجمة تحتوي: language, title, subtitle, description, duration, facilities',
           },
           mainImages: {
             type: 'string',
@@ -120,6 +126,7 @@ export const FindOneTripSwagger = () =>
       schema: {
         example: {
           id: 'bf176f2b-d79a-4b70-a8dd-e9f86f191371',
+          slug: 'cairo-historical-trip',
           price: '350.00',
           start_time: '8:00 AM',
           end_time: '6:00 PM',
@@ -133,7 +140,6 @@ export const FindOneTripSwagger = () =>
               language: 'ar',
               title: 'رحلة القاهرة التاريخية',
               subtitle: 'استكشف الأهرامات',
-              slug: 'cairo-historical-trip',
               description: 'رحلة مميزة لاستكشاف معالم القاهرة التاريخية',
               duration: '3 أيام / 2 ليالي',
               facilities: ['نقل مكيف', 'دليل سياحي', 'غداء'],
@@ -144,7 +150,6 @@ export const FindOneTripSwagger = () =>
               language: 'en',
               title: 'Cairo Historical Trip',
               subtitle: 'Explore the Pyramids',
-              slug: 'cairo-historical-trip-en',
               description:
                 "Amazing trip to explore Cairo's historical landmarks",
               duration: '3 Days / 2 Nights',
@@ -226,15 +231,20 @@ export const UpdateTripSwagger = () =>
       schema: {
         type: 'object',
         properties: {
+          slug: {
+            type: 'string',
+            example: 'cairo-historical-trip-updated',
+            description: 'الـ slug الفريد للرحلة (اختياري)',
+          },
           price: { type: 'number', example: 400, minimum: 0 },
           start_time: { type: 'string', example: '9:00 AM' },
           end_time: { type: 'string', example: '7:00 PM' },
           translations: {
             type: 'string',
             example:
-              '[{"language":"ar","title":"رحلة القاهرة المحدثة","subtitle":"استكشف الأهرامات","slug":"cairo-trip-updated","description":"وصف محدث","duration":"4 أيام / 3 ليالي","facilities":["نقل","دليل"]}]',
+              '[{"language":"ar","title":"رحلة القاهرة المحدثة","subtitle":"استكشف الأهرامات","description":"وصف محدث","duration":"4 أيام / 3 ليالي","facilities":["نقل","دليل"]}]',
             description:
-              'JSON string - الترجمات المراد تحديثها (upsert). كل ترجمة تحتوي: language, title, subtitle, slug, description, duration, facilities',
+              'JSON string - الترجمات المراد تحديثها (upsert). كل ترجمة تحتوي: language, title, subtitle, description, duration, facilities',
           },
           options: {
             type: 'string',

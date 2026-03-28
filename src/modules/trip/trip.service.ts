@@ -32,12 +32,13 @@ export class TripService {
     }
 
     const tripId = randomUUID();
-    const { translations, options, addons, ...rest } = createTripDto;
+    const { translations, options, addons, slug, ...rest } = createTripDto;
 
     return this.prismaService.$transaction(async (tx) => {
       await tx.trips.create({
         data: {
           id: tripId,
+          slug,
           ...rest,
         },
       });

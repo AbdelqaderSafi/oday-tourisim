@@ -6,7 +6,6 @@ import { Prisma } from 'generated/prisma/client';
 const translationSchema = z.object({
   language: z.enum(['ar', 'en']),
   name: z.string().min(2).max(255),
-  slug: z.string().min(2).max(255),
   description: z.string().min(2),
   Facilities: z.array(z.string().min(1).max(255)),
 });
@@ -65,6 +64,7 @@ const addonsField = z
   .optional();
 
 export const hotelValidationSchema = z.object({
+  slug: z.string().min(2).max(255),
   destination: z.enum([
     'SHARM_EL_SHEIKH',
     'EL_GHARDQA',
@@ -108,6 +108,7 @@ const uuidLike = z
   );
 
 export const updateHotelValidationSchema = z.object({
+  slug: z.string().min(2).max(255).optional(),
   destination: z
     .union([
       z.enum(['SHARM_EL_SHEIKH', 'EL_GHARDQA', 'EL_AIN_SOKHNA', 'DAHAB']),

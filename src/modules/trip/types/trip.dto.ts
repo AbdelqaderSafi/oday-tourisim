@@ -4,7 +4,6 @@ export type TripTranslationInput = {
   language: LanguageEnum;
   title: string;
   subtitle: string;
-  slug: string;
   description: string;
   duration: string;
   facilities: Prisma.JsonValue;
@@ -21,6 +20,7 @@ export type TripAddonInput = {
 };
 
 export type CreateTripDto = {
+  slug: string;
   price: Prisma.Decimal;
   start_time: string;
   end_time: string;
