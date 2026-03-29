@@ -1,4 +1,4 @@
-FROM node:22-slim
+FROM node:22-slim AS builder
 
 WORKDIR /app
 
@@ -22,20 +22,32 @@ RUN npx prisma generate
 
 # 2. Ensure source package.json files exist for tsc ESM detection
 RUN echo '{"type":"module"}' > generated/prisma/package.json \
-    && echo '{"type":"module"}' > generated/prisma/internal/package.json \
-    && echo "=== SOURCE package.json ===" && cat generated/prisma/package.json
+    && echo '{"type":"module"}' > generated/prisma/internal/package.json
 
-# 3. Build NestJS (tsc will see type:module and output ESM for generated files)
+# 3. Build NestJS
 RUN npx nest build
 
-# 4. Debug: show what tsc produced
-RUN echo "=== DIST client.js first 5 lines ===" && head -5 dist/generated/prisma/client.js
-
-# 5. Ensure runtime package.json for Node ESM resolution
+# 4. Ensure runtime package.json for Node ESM resolution
 RUN mkdir -p dist/generated/prisma/internal \
     && echo '{"type":"module"}' > dist/generated/prisma/package.json \
     && echo '{"type":"module"}' > dist/generated/prisma/internal/package.json
 
+# ---- Production image ----
+FROM node:22-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/generated ./generated
+COPY --from=builder /app/prisma ./prisma
+
+ENV NODE_ENV=production
+
 EXPOSE 3000
 
-CMD npx prisma migrate deploy && npx tsx prisma/seed.ts && node dist/src/main
+CMD npx prisma migrate deploy && node dist/prisma/seed.js && node dist/src/main
