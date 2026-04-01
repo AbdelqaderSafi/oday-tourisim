@@ -8,14 +8,9 @@ export const CreateRoomSwagger = () =>
     ApiBody({
       schema: {
         type: 'object',
-        required: ['price', 'capacity', 'translations'],
+        required: ['price', 'translations'],
         properties: {
           price: { type: 'number', example: 150, minimum: 0 },
-          capacity: {
-            type: 'string',
-            example: '2',
-            description: 'عدد الأشخاص',
-          },
           translations: {
             type: 'array',
             items: {
@@ -24,11 +19,12 @@ export const CreateRoomSwagger = () =>
               properties: {
                 language: { type: 'string', enum: ['ar', 'en'], example: 'ar' },
                 name: { type: 'string', example: 'غرفة ديلوكس' },
+                description: { type: 'string', example: 'غرفة فاخرة مع إطلالة على البحر', nullable: true },
               },
             },
             example: [
-              { language: 'ar', name: 'غرفة ديلوكس' },
-              { language: 'en', name: 'Deluxe Room' },
+              { language: 'ar', name: 'غرفة ديلوكس', description: 'غرفة فاخرة مع إطلالة على البحر' },
+              { language: 'en', name: 'Deluxe Room', description: 'Luxury room with sea view' },
             ],
           },
         },
@@ -65,7 +61,6 @@ export const UpdateRoomSwagger = () =>
         type: 'object',
         properties: {
           price: { type: 'number', example: 200, minimum: 0 },
-          capacity: { type: 'string', example: '3' },
           translations: {
             type: 'array',
             items: {
@@ -73,6 +68,7 @@ export const UpdateRoomSwagger = () =>
               properties: {
                 language: { type: 'string', enum: ['ar', 'en'] },
                 name: { type: 'string', example: 'غرفة سويت' },
+                description: { type: 'string', example: 'غرفة واسعة مع جاكوزي', nullable: true },
               },
             },
           },

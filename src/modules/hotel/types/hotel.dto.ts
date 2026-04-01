@@ -15,8 +15,7 @@ export type TranslationInput = {
 
 export type RoomInput = {
   price: Prisma.Decimal;
-  capacity: string;
-  translations: { language: LanguageEnum; name: string }[];
+  translations: { language: LanguageEnum; name: string; description?: string }[];
 };
 
 export type AddonInput = {

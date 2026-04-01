@@ -21,12 +21,12 @@ const roomInputSchema = z.object({
     .number()
     .min(0)
     .transform((val) => new Prisma.Decimal(val)),
-  capacity: z.string().min(1).max(50),
   translations: z
     .array(
       z.object({
         language: z.enum(['ar', 'en']),
         name: z.string().min(2).max(255),
+        description: z.string().min(1).optional(),
       }),
     )
     .min(1)

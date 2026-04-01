@@ -79,7 +79,7 @@ export class RoomService {
             where: {
               room_id_language: { room_id: id, language: translation.language },
             },
-            update: { name: translation.name },
+            update: { name: translation.name, description: translation.description },
             create: { room_id: id, ...translation },
           });
         }

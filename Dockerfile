@@ -50,4 +50,4 @@ ENV NODE_ENV=production
 
 EXPOSE 3000
 
-CMD npx prisma migrate deploy && node dist/prisma/seed.js && node dist/src/main
+CMD npx prisma migrate deploy && node dist/src/main

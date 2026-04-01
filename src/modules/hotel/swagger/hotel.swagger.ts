@@ -93,9 +93,9 @@ export const CreateHotelSwagger = () =>
           rooms: {
             type: 'string',
             example:
-              '[{"price":150,"capacity":"2","translations":[{"language":"ar","name":"غرفة ديلوكس"},{"language":"en","name":"Deluxe Room"}]}]',
+              '[{"price":150,"translations":[{"language":"ar","name":"غرفة ديلوكس","description":"غرفة فاخرة مع إطلالة على البحر"},{"language":"en","name":"Deluxe Room","description":"Luxury room with sea view"}]}]',
             description:
-              'JSON string - مصفوفة الغرف (اختياري). كل غرفة تحتوي: price, capacity, translations[]',
+              'JSON string - مصفوفة الغرف (اختياري). كل غرفة تحتوي: price, translations[]',
           },
           addons: {
             type: 'string',
@@ -209,7 +209,6 @@ export const FindOneHotelSwagger = () =>
           rooms: [
             {
               id: 'room-uuid',
-              capacity: '2',
               price: '150.00',
               is_deleted: false,
               translations: [
@@ -218,12 +217,14 @@ export const FindOneHotelSwagger = () =>
                   room_id: 'room-uuid',
                   language: 'ar',
                   name: 'غرفة ديلوكس',
+                  description: 'غرفة فاخرة مع إطلالة على البحر',
                 },
                 {
                   id: 'rt-2',
                   room_id: 'room-uuid',
                   language: 'en',
                   name: 'Deluxe Room',
+                  description: 'Luxury room with sea view',
                 },
               ],
             },
@@ -308,9 +309,9 @@ export const UpdateHotelSwagger = () =>
           rooms: {
             type: 'string',
             example:
-              '[{"price":150,"capacity":"2","translations":[{"language":"ar","name":"غرفة ديلوكس"},{"language":"en","name":"Deluxe Room"}]}]',
+              '[{"price":150,"translations":[{"language":"ar","name":"غرفة ديلوكس","description":"غرفة فاخرة مع إطلالة على البحر"},{"language":"en","name":"Deluxe Room","description":"Luxury room with sea view"}]}]',
             description:
-              'JSON string - غرف جديدة تُضاف للفندق (اختياري). كل غرفة تحتوي: price, capacity, translations[]',
+              'JSON string - غرف جديدة تُضاف للفندق (اختياري). كل غرفة تحتوي: price, translations[]',
           },
           addons: {
             type: 'string',

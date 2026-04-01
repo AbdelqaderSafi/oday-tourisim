@@ -3,11 +3,11 @@ import { LanguageEnum, Prisma } from 'generated/prisma/client';
 export type RoomTranslationInput = {
   language: LanguageEnum;
   name: string;
+  description?: string;
 };
 
 export type CreateRoomDto = {
   price: Prisma.Decimal;
-  capacity: string;
   translations: RoomTranslationInput[];
 };
 

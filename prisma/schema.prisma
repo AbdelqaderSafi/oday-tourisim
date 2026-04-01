@@ -18,7 +18,7 @@ model Admin {
 }
 
 model Service {
-  id          String         @id @default(uuid()) @db.VarChar(36)
+  id          String          @id @default(uuid()) @db.VarChar(36)
   title       String          @db.Text
   type        ServiceTypeEnum
   description String?         @db.Text
@@ -26,29 +26,7 @@ model Service {
   created_at  DateTime        @default(now())
   updated_at  DateTime        @updatedAt
 
-  checkouts Checkout[]
-
   @@map("services")
-}
-
-model Checkout {
-  id                String    @id @default(uuid()) @db.VarChar(36)
-  hotel_id          String    @db.VarChar(36)
-  trip_id           String?   @db.VarChar(36)
-  service_id        String?   @db.VarChar(36)
-  start_date        DateTime
-  end_date          DateTime?
-  individual_number Int
-  total_price       Decimal   @db.Decimal(10, 2)
-
-  hotel             hotels    @relation(fields: [hotel_id], references: [id])
-  trip              trips?    @relation(fields: [trip_id], references: [id])
-  service           Service?  @relation(fields: [service_id], references: [id])
-
-  @@index([hotel_id], map: "checkout_hotel_id_fkey")
-  @@index([service_id], map: "checkout_service_id_fkey")
-  @@index([trip_id], map: "checkout_trip_id_fkey")
-  @@map("checkout")
 }
 
 model comments {
@@ -56,20 +34,18 @@ model comments {
   client_name String         @db.VarChar(255)
   stars       comments_stars
   comment     String         @db.Text
-  trip_name   String        @db.VarChar(255)
-  city        String        @db.VarChar(255)
+  trip_name   String         @db.VarChar(255)
+  city        String         @db.VarChar(255)
   created_at  DateTime       @default(now())
   updated_at  DateTime       @updatedAt
   is_deleted  Boolean        @default(false)
 }
 
 model questions {
-  id          String                   @id @default(uuid()) @db.VarChar(36)
-  created_at  DateTime                 @default(now())
-  updated_at  DateTime                 @updatedAt
-  is_deleted  Boolean                  @default(false)
-
-  translations questions_translations[]
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_deleted Boolean  @default(false)
 }
 
 model questions_translations {
@@ -78,8 +54,6 @@ model questions_translations {
   language    LanguageEnum
   question    String       @db.Text
   answer      String       @db.Text
-
-  questionRef questions    @relation(fields: [question_id], references: [id], onDelete: Cascade)
 
   @@unique([question_id, language])
 }
@@ -90,11 +64,9 @@ model gallery {
   image_title String       @db.Text
   description String?      @db.Text
   type        gallery_type
-  created_at  DateTime       @default(now())
-  updated_at  DateTime       @updatedAt
-  is_deleted  Boolean        @default(false)
-
-  assets   Asset[]    @relation("GalleryAssets")
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
+  is_deleted  Boolean      @default(false)
 }
 
 model hotels {
@@ -108,46 +80,32 @@ model hotels {
   discount_percentage Decimal?          @db.Decimal(5, 2)
   original_price      Decimal?          @db.Decimal(10, 2)
   youtube_video_url   String?           @db.Text
-
   is_deleted          Boolean           @default(false)
   created_at          DateTime          @default(now())
   updated_at          DateTime          @updatedAt
-
-  rooms        Room[]
-  addons       HotelAddon[]
-  translations HotelTranslation[]
-  checkouts    Checkout[]
-  assets       Asset[]    @relation("HotelAssets")
 }
 
 model HotelTranslation {
   id          String       @id @default(uuid()) @db.VarChar(36)
   hotel_id    String       @db.VarChar(36)
   language    LanguageEnum
-
   name        String       @db.VarChar(255)
   description String       @db.Text
   Facilities  Json
-
-  hotel       hotels       @relation(fields: [hotel_id], references: [id], onDelete: Cascade)
 
   @@unique([hotel_id, language])
   @@map("hotel_translations")
 }
 
 model HotelAddon {
-  id          String   @id @default(uuid()) @db.VarChar(36)
-  price       Decimal  @db.Decimal(10, 2)
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  price      Decimal  @db.Decimal(10, 2)
+  hotel_id   String   @db.VarChar(36)
+  is_deleted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  hotel_id    String   @db.VarChar(36)
-  hotel       hotels   @relation(fields: [hotel_id], references: [id], onDelete: Cascade)
-
-  translations HotelAddonTranslation[]
-
-  is_deleted  Boolean  @default(false)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
+  @@index([hotel_id], map: "hotel_addons_hotel_id_fkey")
   @@map("hotel_addons")
 }
 
@@ -155,29 +113,22 @@ model HotelAddonTranslation {
   id          String       @id @default(uuid()) @db.VarChar(36)
   addon_id    String       @db.VarChar(36)
   language    LanguageEnum
-
   name        String       @db.VarChar(255)
   description String       @db.Text
-
-  addon       HotelAddon   @relation(fields: [addon_id], references: [id], onDelete: Cascade)
 
   @@unique([addon_id, language])
   @@map("hotel_addon_translations")
 }
 
 model TripAddon {
-  id          String   @id @default(uuid()) @db.VarChar(36)
-  price       Decimal  @db.Decimal(10, 2)
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  price      Decimal  @db.Decimal(10, 2)
+  trip_id    String   @db.VarChar(36)
+  is_deleted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  trip_id     String   @db.VarChar(36)
-  trip        trips    @relation(fields: [trip_id], references: [id], onDelete: Cascade)
-
-  translations TripAddonTranslation[]
-
-  is_deleted  Boolean  @default(false)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
+  @@index([trip_id], map: "trip_addons_trip_id_fkey")
   @@map("trip_addons")
 }
 
@@ -185,11 +136,8 @@ model TripAddonTranslation {
   id          String       @id @default(uuid()) @db.VarChar(36)
   addon_id    String       @db.VarChar(36)
   language    LanguageEnum
-
   name        String       @db.VarChar(255)
   description String       @db.Text
-
-  addon       TripAddon    @relation(fields: [addon_id], references: [id], onDelete: Cascade)
 
   @@unique([addon_id, language])
   @@map("trip_addon_translations")
@@ -197,50 +145,39 @@ model TripAddonTranslation {
 
 model Room {
   id         String   @id @default(uuid()) @db.VarChar(36)
-  capacity   String   @db.VarChar(50)
   price      Decimal  @db.Decimal(10, 2)
-
   hotel_id   String   @db.VarChar(36)
-  hotel      hotels   @relation(fields: [hotel_id], references: [id], onDelete: Cascade)
-
-  translations RoomTranslation[]
-
   is_deleted Boolean  @default(false)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  @@index([hotel_id], map: "room_hotel_id_fkey")
   @@map("room")
 }
 
 model RoomTranslation {
-  id        String       @id @default(uuid()) @db.VarChar(36)
-  room_id   String       @db.VarChar(36)
-  language  LanguageEnum
-
-  name      String       @db.VarChar(255)
-
-  room      Room         @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  id          String       @id @default(uuid()) @db.VarChar(36)
+  room_id     String       @db.VarChar(36)
+  language    LanguageEnum
+  name        String       @db.VarChar(255)
+  description String?      @db.Text
 
   @@unique([room_id, language])
   @@map("room_translations")
 }
 
 model offers {
-  id          String   @id @default(uuid()) @db.VarChar(36)
-  is_deleted  Boolean  @default(false)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
-  assets   Asset[]    @relation("OfferAssets")
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  is_deleted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model PhotoGallery {
-  id          String   @id @default(uuid()) @db.VarChar(36)
-  is_deleted  Boolean  @default(false)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
-  assets   Asset[]    @relation("PhotoGalleryAssets")
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  is_deleted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@map("photo_gallery")
 }
@@ -262,35 +199,25 @@ model settings {
 }
 
 model trips {
-  id          String         @id @default(uuid()) @db.VarChar(36)
-  slug        String         @unique @db.VarChar(255)
-  price       Decimal        @db.Decimal(10, 2)
-  start_time  String         @db.VarChar(255)
-  end_time    String         @db.VarChar(255)
-
-  is_deleted  Boolean        @default(false)
-  created_at  DateTime       @default(now())
-  updated_at  DateTime       @updatedAt
-
-  options      TripOption[]
-  addons       TripAddon[]
-  translations TripTranslation[]
-  checkouts    Checkout[]
-  assets       Asset[]            @relation("TripAssets")
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  slug       String   @unique @db.VarChar(255)
+  price      Decimal  @db.Decimal(10, 2)
+  start_time String   @db.VarChar(255)
+  end_time   String   @db.VarChar(255)
+  is_deleted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model TripTranslation {
   id          String       @id @default(uuid()) @db.VarChar(36)
   trip_id     String       @db.VarChar(36)
   language    LanguageEnum
-
   title       String       @db.VarChar(255)
   subtitle    String       @db.VarChar(255)
   description String       @db.Text
   duration    String       @db.VarChar(255)
   facilities  Json
-
-  trip        trips        @relation(fields: [trip_id], references: [id], onDelete: Cascade)
 
   @@unique([trip_id, language])
   @@map("trip_translations")
@@ -299,53 +226,41 @@ model TripTranslation {
 model TripOption {
   id         String   @id @default(uuid()) @db.VarChar(36)
   price      Decimal  @db.Decimal(10, 2)
-
-  trip_id   String   @db.VarChar(36)
-  trip      trips   @relation(fields: [trip_id], references: [id], onDelete: Cascade)
-
-  translations OptionTranslation[]
-
+  trip_id    String   @db.VarChar(36)
   is_deleted Boolean  @default(false)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  @@index([trip_id], map: "trip_options_trip_id_fkey")
   @@map("trip_options")
 }
+
 model OptionTranslation {
   id        String       @id @default(uuid()) @db.VarChar(36)
-  option_id   String       @db.VarChar(36)
+  option_id String       @db.VarChar(36)
   language  LanguageEnum
-
   name      String       @db.VarChar(255)
-
-  option      TripOption         @relation(fields: [option_id], references: [id], onDelete: Cascade)
 
   @@unique([option_id, language])
   @@map("trip_option_translations")
 }
 
 model SecurityServiceType {
-  id           String   @id @default(uuid()) @db.VarChar(36)
-  price        Decimal  @db.Decimal(10, 2)
-
-  translations SecurityServiceTypeTranslation[]
-
-  is_deleted   Boolean  @default(false)
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  price      Decimal  @db.Decimal(10, 2)
+  is_deleted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@map("security_service_types")
 }
 
 model SecurityServiceTypeTranslation {
-  id              String              @id @default(uuid()) @db.VarChar(36)
-  service_type_id String              @db.VarChar(36)
+  id              String       @id @default(uuid()) @db.VarChar(36)
+  service_type_id String       @db.VarChar(36)
   language        LanguageEnum
-
-  name            String              @db.VarChar(255)
-  description     String              @db.Text
-
-  service_type    SecurityServiceType @relation(fields: [service_type_id], references: [id], onDelete: Cascade)
+  name            String       @db.VarChar(255)
+  description     String       @db.Text
 
   @@unique([service_type_id, language])
   @@map("security_service_type_translations")
@@ -356,7 +271,6 @@ model NationalityPricing {
   nationality Nationality @unique
   price_24h   Decimal     @db.Decimal(10, 2)
   price_72h   Decimal     @db.Decimal(10, 2)
-
   is_deleted  Boolean     @default(false)
   created_at  DateTime    @default(now())
   updated_at  DateTime    @updatedAt
@@ -365,10 +279,9 @@ model NationalityPricing {
 }
 
 model AirlinePricing {
-  id         String  @id @default(uuid()) @db.VarChar(36)
-  airline    Airline @unique
-  price      Decimal @db.Decimal(10, 2)
-
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  airline    Airline  @unique
+  price      Decimal  @db.Decimal(10, 2)
   is_deleted Boolean  @default(false)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -384,50 +297,56 @@ model Asset {
   fileType            String              @map("file_type") @db.Text
   fileSizeInKB        Int                 @map("file_size_in_kb") @db.UnsignedInt
   kind                AssetKind
-
   hotelId             String?             @map("hotel_id") @db.VarChar(36)
-  hotel               hotels?             @relation("HotelAssets", fields: [hotelId], references: [id])
-
   tripId              String?             @map("trip_id") @db.VarChar(36)
-  trip                trips?              @relation("TripAssets", fields: [tripId], references: [id])
-
   offerId             String?             @map("offer_id") @db.VarChar(36)
-  offer               offers?             @relation("OfferAssets", fields: [offerId], references: [id])
-
   galleryId           String?             @map("gallery_id") @db.VarChar(36)
-  gallery             gallery?            @relation("GalleryAssets", fields: [galleryId], references: [id])
-
   photoGalleryId      String?             @map("photo_gallery_id") @db.VarChar(36)
-  photoGallery        PhotoGallery?       @relation("PhotoGalleryAssets", fields: [photoGalleryId], references: [id])
-
   createdAt           DateTime            @default(now()) @map("created_at")
   updatedAt           DateTime            @updatedAt @map("updated_at")
-  
+
   @@index([tripId])
   @@index([hotelId])
   @@index([galleryId])
   @@index([offerId])
   @@index([photoGalleryId])
-
   @@map("assets")
 }
+
+model checkout {
+  id                String    @id @db.VarChar(36)
+  hotel_id          String    @db.VarChar(36)
+  trip_id           String?   @db.VarChar(36)
+  service_id        String?   @db.VarChar(36)
+  start_date        DateTime
+  end_date          DateTime?
+  individual_number Int
+  total_price       Decimal   @db.Decimal(10, 2)
+
+  @@index([hotel_id], map: "checkout_hotel_id_fkey")
+  @@index([service_id], map: "checkout_service_id_fkey")
+  @@index([trip_id], map: "checkout_trip_id_fkey")
+}
+
 enum LanguageEnum {
   ar
   en
 }
 
 enum HotelFilterRating {
-  UNRATED 
+  UNRATED
   MOST_BOOKED
-  TOP_RATED 
-  LOWEST_PRICE 
+  TOP_RATED
+  LOWEST_PRICE
 }
+
 enum DestinatiosnEnum {
   SHARM_EL_SHEIKH
   EL_GHARDQA
   EL_AIN_SOKHNA
   DAHAB
 }
+
 enum ServiceTypeEnum {
   FLYING
   TRANSPORTATION
@@ -451,16 +370,15 @@ enum hotels_stars {
   FIVE
 }
 
-
 enum gallery_type {
   COMPANY
   CLIENT
 }
 
-
 enum StorageProviderName {
   IMAGE_KIT
 }
+
 enum AssetKind {
   HOTEL_MAIN_IMAGE
   HOTEL_GALLERY_IMAGE

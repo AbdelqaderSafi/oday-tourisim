@@ -28,7 +28,6 @@ export class FileService {
       },
       _removeFile: (req, file, cb) => {
         if (!file.fileId) return cb(null);
-        console.log('_removeFile of custom multer imagekit storage triggered ');
         this.deleteFileFromImageKit(file.fileId)
           .then(() => cb(null))
           .catch(cb);
