@@ -2,7 +2,7 @@ FROM node:22-slim AS builder
 
 WORKDIR /app
 
-# Install dependencies for native modules (argon2, bcrypt)
+# Install dependencies for native modules (argon2)
 RUN apt-get update && apt-get install -y \
     python3 \
     make \
@@ -45,6 +45,7 @@ RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/generated ./generated
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.mjs ./prisma.config.mjs
 
 ENV NODE_ENV=production
 
