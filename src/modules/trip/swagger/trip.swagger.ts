@@ -64,9 +64,9 @@ export const CreateTripSwagger = () =>
           options: {
             type: 'string',
             example:
-              '[{"price":100,"translations":[{"language":"ar","name":"خيار قياسي"},{"language":"en","name":"Standard Option"}]}]',
+              '[{"price":100,"translations":[{"language":"ar","name":"خيار قياسي","description":"وصف الخيار القياسي"},{"language":"en","name":"Standard Option","description":"Standard option description"}]}]',
             description:
-              'JSON string - مصفوفة الخيارات (اختياري). كل خيار يحتوي: price, translations[]',
+              'JSON string - مصفوفة الخيارات (اختياري). كل خيار يحتوي: price, translations[] (name مطلوب، description اختياري)',
           },
           addons: {
             type: 'string',
@@ -175,12 +175,14 @@ export const FindOneTripSwagger = () =>
                   option_id: 'option-uuid',
                   language: 'ar',
                   name: 'خيار قياسي',
+                  description: 'وصف الخيار القياسي',
                 },
                 {
                   id: 'ot-2',
                   option_id: 'option-uuid',
                   language: 'en',
                   name: 'Standard Option',
+                  description: 'Standard option description',
                 },
               ],
             },
@@ -249,9 +251,9 @@ export const UpdateTripSwagger = () =>
           options: {
             type: 'string',
             example:
-              '[{"price":100,"translations":[{"language":"ar","name":"خيار قياسي"},{"language":"en","name":"Standard Option"}]}]',
+              '[{"price":100,"translations":[{"language":"ar","name":"خيار قياسي","description":"وصف الخيار القياسي"},{"language":"en","name":"Standard Option","description":"Standard option description"}]}]',
             description:
-              'JSON string - خيارات جديدة تُضاف للرحلة (اختياري). كل خيار يحتوي: price, translations[]',
+              'JSON string - خيارات جديدة تُضاف للرحلة (اختياري). كل خيار يحتوي: price, translations[] (name مطلوب، description اختياري)',
           },
           addons: {
             type: 'string',

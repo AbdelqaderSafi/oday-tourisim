@@ -262,11 +262,12 @@ model TripOption {
 }
 
 model OptionTranslation {
-  id        String       @id @default(uuid()) @db.VarChar(36)
-  option_id String       @db.VarChar(36)
-  language  LanguageEnum
-  name      String       @db.VarChar(255)
-  option    TripOption   @relation(fields: [option_id], references: [id])
+  id          String       @id @default(uuid()) @db.VarChar(36)
+  option_id   String       @db.VarChar(36)
+  language    LanguageEnum
+  name        String       @db.VarChar(255)
+  description String?      @db.Text
+  option      TripOption   @relation(fields: [option_id], references: [id])
 
   @@unique([option_id, language])
   @@map("trip_option_translations")

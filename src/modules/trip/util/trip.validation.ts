@@ -28,6 +28,7 @@ const tripOptionInputSchema = z.object({
       z.object({
         language: z.enum(['ar', 'en']),
         name: z.string().min(2).max(255),
+        description: z.string().min(2).optional(),
       }),
     )
     .min(1)

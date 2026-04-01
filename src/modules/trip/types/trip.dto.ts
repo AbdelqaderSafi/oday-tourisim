@@ -11,7 +11,7 @@ export type TripTranslationInput = {
 
 export type TripOptionInput = {
   price: Prisma.Decimal;
-  translations: { language: LanguageEnum; name: string }[];
+  translations: { language: LanguageEnum; name: string; description?: string }[];
 };
 
 export type TripAddonInput = {
