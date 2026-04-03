@@ -44,6 +44,11 @@ export const CreateTripSwagger = () =>
             example: '6:00 PM',
             description: 'وقت الانتهاء',
           },
+          youtube_video_url: {
+            type: 'string',
+            example: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            description: 'رابط فيديو يوتيوب للرحلة (اختياري)',
+          },
           translations: {
             type: 'string',
             example:
@@ -130,6 +135,7 @@ export const FindOneTripSwagger = () =>
           price: '350.00',
           start_time: '8:00 AM',
           end_time: '6:00 PM',
+          youtube_video_url: null,
           is_deleted: false,
           created_at: '2026-03-18T10:00:00.000Z',
           updated_at: '2026-03-18T10:00:00.000Z',
@@ -241,6 +247,11 @@ export const UpdateTripSwagger = () =>
           price: { type: 'number', example: 400, minimum: 0 },
           start_time: { type: 'string', example: '9:00 AM' },
           end_time: { type: 'string', example: '7:00 PM' },
+          youtube_video_url: {
+            type: 'string',
+            example: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            description: 'رابط فيديو يوتيوب (اختياري، أرسل سلسلة فارغة لإزالته)',
+          },
           translations: {
             type: 'string',
             example:

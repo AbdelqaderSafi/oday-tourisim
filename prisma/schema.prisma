@@ -218,12 +218,13 @@ model settings {
 }
 
 model trips {
-  id           String            @id @default(uuid()) @db.VarChar(36)
-  slug         String            @unique @db.VarChar(255)
-  price        Decimal           @db.Decimal(10, 2)
-  start_time   String            @db.VarChar(255)
-  end_time     String            @db.VarChar(255)
-  is_deleted   Boolean           @default(false)
+  id                 String            @id @default(uuid()) @db.VarChar(36)
+  slug               String            @unique @db.VarChar(255)
+  price              Decimal           @db.Decimal(10, 2)
+  start_time         String            @db.VarChar(255)
+  end_time           String            @db.VarChar(255)
+  youtube_video_url  String?           @db.Text
+  is_deleted         Boolean           @default(false)
   created_at   DateTime          @default(now())
   updated_at   DateTime          @updatedAt
   translations TripTranslation[]

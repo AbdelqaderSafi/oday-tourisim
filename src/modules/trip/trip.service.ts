@@ -32,7 +32,8 @@ export class TripService {
     }
 
     const tripId = randomUUID();
-    const { translations, options, addons, slug, ...rest } = createTripDto;
+    const { translations, options, addons, slug, youtube_video_url, ...rest } =
+      createTripDto;
 
     return this.prismaService.$transaction(async (tx) => {
       await tx.trips.create({
@@ -40,6 +41,10 @@ export class TripService {
           id: tripId,
           slug,
           ...rest,
+          ...(youtube_video_url !== undefined && {
+            youtube_video_url:
+              youtube_video_url === '' ? null : youtube_video_url,
+          }),
         },
       });
 
@@ -185,8 +190,14 @@ export class TripService {
     });
     if (!trip) throw new NotFoundException('الرحلة غير موجودة');
 
-    const { deleteAssetIds, translations, options, addons, ...rest } =
-      updateTripDto;
+    const {
+      deleteAssetIds,
+      translations,
+      options,
+      addons,
+      youtube_video_url,
+      ...rest
+    } = updateTripDto;
 
     const fileIdsToDelete = trip.assets
       .filter((a) => deleteAssetIds?.includes(a.id))
@@ -219,7 +230,13 @@ export class TripService {
 
       await tx.trips.update({
         where: { id },
-        data: rest,
+        data: {
+          ...rest,
+          ...(youtube_video_url !== undefined && {
+            youtube_video_url:
+              youtube_video_url === '' ? null : youtube_video_url,
+          }),
+        },
       });
 
       if (translations?.length) {

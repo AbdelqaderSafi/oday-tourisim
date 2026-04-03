@@ -24,6 +24,7 @@ export type CreateTripDto = {
   price: Prisma.Decimal;
   start_time: string;
   end_time: string;
+  youtube_video_url?: string;
   translations: TripTranslationInput[];
   options?: TripOptionInput[];
   addons?: TripAddonInput[];
